@@ -1,0 +1,26 @@
+export const COLORS = {
+  gold: "#C07F24",
+  goldLight: "#E4A830",
+  goldPale: "#FDF5E0",
+  brown: "#4A2C0A",
+  brownMid: "#7A4A1E",
+  brownLight: "#B07040",
+  green: "#3A6B45",
+  greenLight: "#5A9A68",
+  greenPale: "#E8F5EC",
+  cream: "#FEFAF3",
+  ivory: "#FFF9EE",
+  white: "#FFFFFF",
+  textDark: "#1E1208",
+  textMid: "#6B4A22",
+  textLight: "#A07848",
+  border: "rgba(192,127,36,.22)",
+  sh: "0 2px 16px rgba(74,44,10,.09)",
+  shL: "0 8px 40px rgba(74,44,10,.14)",
+  shXl: "0 20px 60px rgba(74,44,10,.18)",
+  r: "16px",
+  rSm: "10px",
+  rXl: "24px",
+};
+
+export const T = COLORS; // For compatibility with the user's provided code
