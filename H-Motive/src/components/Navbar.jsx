@@ -61,10 +61,11 @@ export default function Navbar({ cartCount, navigate, user }) {
             display: "flex", alignItems: "center", justifyContent: "center", 
             fontSize: 22, boxShadow: `0 8px 20px ${T.gold}30` 
           }}>🍯</div>
-          <span style={{ 
+          <span className="nav-logo-text" style={{ 
             fontFamily: "'Libre Baskerville', serif", fontSize: 24, fontWeight: 700, 
             color: T.brown, letterSpacing: "-0.5px" 
           }}>H-Motive</span>
+
         </div>
 
         {/* Links */}

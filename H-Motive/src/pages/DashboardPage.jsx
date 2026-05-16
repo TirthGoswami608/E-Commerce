@@ -75,11 +75,14 @@ export default function DashboardPage({ navigate, user }) {
               <div style={{ height: 6, background: "rgba(255,255,255,0.2)", borderRadius: 3, marginBottom: 20 }}>
                 <div style={{ width: "90%", height: "100%", background: "#fff", borderRadius: 3, boxShadow: "0 0 10px #fff" }} />
               </div>
-              <button style={{ width: "100%", background: "#fff", color: T.gold, border: "none", borderRadius: "100px", padding: "12px", fontSize: 13, fontWeight: 800, cursor: "pointer", transition: "all 0.3s" }}
+              <button 
+                onClick={() => navigate("redeem")}
+                style={{ width: "100%", background: "#fff", color: T.gold, border: "none", borderRadius: "100px", padding: "12px", fontSize: 13, fontWeight: 800, cursor: "pointer", transition: "all 0.3s" }}
                 onMouseEnter={e => e.target.style.transform = "scale(1.02)"}
                 onMouseLeave={e => e.target.style.transform = "none"}>
                 Redeem Rewards
               </button>
+
             </div>
           </div>
         </aside>

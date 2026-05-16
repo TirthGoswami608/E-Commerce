@@ -1,22 +1,26 @@
 import { useState } from "react";
-import { COLORS } from './constants/theme';
-import { products, categories, benefits, reviews } from './constants/data';
-import Navbar from './components/Navbar';
 import HeroSlider from './components/HeroSlider';
+import Navbar from './components/Navbar';
 import ProductCard from './components/ProductCard';
 import ReviewCard from './components/ReviewCard';
+import { benefits, products, reviews } from './constants/data';
+import { COLORS } from './constants/theme';
 
 // Page Imports
-import LoginPage from "./pages/LoginPage";
-import SignupPage from "./pages/SignupPage";
-import CheckoutPage from "./pages/CheckoutPage";
-import DashboardPage from "./pages/DashboardPage";
-import OrdersPage from "./pages/OrdersPage";
 import AboutPage from "./pages/AboutPage";
-import ContactPage from "./pages/ContactPage";
-import ShopPage from "./pages/ShopPage";
-import ProductDetailPage from "./pages/ProductDetailPage";
+import AdminPage from "./pages/AdminPage";
 import CartPage from "./pages/CartPage";
+import CheckoutPage from "./pages/CheckoutPage";
+import ContactPage from "./pages/ContactPage";
+import DashboardPage from "./pages/DashboardPage";
+import LoginPage from "./pages/LoginPage";
+import OrdersPage from "./pages/OrdersPage";
+import ProductDetailPage from "./pages/ProductDetailPage";
+import RedeemPage from "./pages/RedeemPage";
+import ShopPage from "./pages/ShopPage";
+import SignupPage from "./pages/SignupPage";
+
+
 
 export default function App() {
   const [page, setPage] = useState("home");
@@ -47,6 +51,10 @@ export default function App() {
       case "contact": return <ContactPage navigate={navigate} />;
       case "shop": return <ShopPage navigate={navigate} onAdd={onAddToCart} />;
       case "detail": return <ProductDetailPage productId={productId} navigate={navigate} onAdd={onAddToCart} />;
+      case "redeem": return <RedeemPage navigate={navigate} />;
+      case "admin": return <AdminPage navigate={navigate} />;
+
+
       case "home":
       default: return (
         <>
@@ -178,11 +186,39 @@ export default function App() {
         .fade-in { animation: fadeIn 0.8s ease-out forwards; }
         .scale-in { animation: scaleIn 0.5s ease-out forwards; }
 
+        /* Mobile & Tablet Responsive Design */
+        @media (max-width: 1024px) {
+          .products-grid { gap: 20px !important; }
+          .benefits-grid { gap: 20px !important; }
+        }
+
         @media (max-width: 768px) {
           .nav-links { display: none !important; }
-          .products-grid { grid-template-columns: repeat(2, 1fr) !important; }
-          .benefits-grid { grid-template-columns: repeat(1, 1fr) !important; }
-          .hero-grid { grid-template-columns: 1fr !important; text-align: center; }
+          .products-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 16px !important; }
+          .benefits-grid { grid-template-columns: repeat(1, 1fr) !important; gap: 16px !important; }
+          .hero-grid { grid-template-columns: 1fr !important; text-align: center; gap: 40px !important; }
+          .reviews-grid { grid-template-columns: repeat(1, 1fr) !important; }
+          
+          body { font-size: 14px; }
+          h1 { font-size: clamp(24px, 5vw, 40px) !important; }
+          h2 { font-size: clamp(20px, 4vw, 32px) !important; }
+          
+          footer { padding: 60px 3% 30px !important; }
+        }
+
+        @media (max-width: 480px) {
+          .products-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
+          .benefits-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
+          .hero-grid { grid-template-columns: 1fr !important; padding: 0 5% !important; gap: 20px !important; }
+          
+          html { scroll-behavior: auto; }
+          body { font-size: 13px; line-height: 1.5; }
+          h1 { font-size: clamp(18px, 5vw, 28px) !important; }
+          h2 { font-size: clamp(16px, 4vw, 24px) !important; }
+          h3 { font-size: clamp(14px, 3vw, 18px) !important; }
+          
+          footer { padding: 40px 3% 20px !important; }
+          footer h4 { font-size: 16px !important; }
         }
 
         /* Custom Scrollbar */
@@ -196,12 +232,14 @@ export default function App() {
         ::-webkit-scrollbar-thumb:hover { background: ${COLORS.brownMid}; }
       `}</style>
 
-      <Navbar cartCount={cartCount} navigate={navigate} user={user} />
+      {page !== "admin" && <Navbar cartCount={cartCount} navigate={navigate} user={user} />}
+
 
       {renderPage()}
 
-      {/* Footer */}
-      <footer style={{ background: COLORS.textDark, color: "#fff", padding: "100px 3% 40px" }}>
+      {page !== "admin" && (
+        <footer style={{ background: COLORS.textDark, color: "#fff", padding: "100px 3% 40px" }}>
+
         <div style={{ maxWidth: 1600, margin: "0 auto" }}>
           <div style={{ display: "grid", gridTemplateColumns: "2.2fr 1fr 1fr 1.2fr", gap: 80, marginBottom: 80 }}>
             <div>
@@ -224,7 +262,8 @@ export default function App() {
             </div>
 
             {[
-              { title: "Navigation", links: [["Home", "home"], ["Shop", "shop"], ["About Us", "about"], ["Contact", "contact"]] },
+              { title: "Navigation", links: [["Home", "home"], ["Shop", "shop"], ["About Us", "about"], ["Contact", "contact"], ["Admin Panel", "admin"]] },
+
               { title: "Our Store", links: ["Wild Honey", "Herbal Herbs", "Virgin Oils", "Superfoods", "Premium Kits"] },
               { title: "Get in Touch", links: ["📍 Ahmedabad, India", "📞 +91 99999 00000", "✉️ hello@hmotive.org", "⏰ Mon–Sat, 9AM–7PM"] },
             ].map((col, i) => (
@@ -257,6 +296,8 @@ export default function App() {
           </div>
         </div>
       </footer>
+      )}
     </div>
+
   );
 }
