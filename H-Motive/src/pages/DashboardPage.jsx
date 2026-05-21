@@ -2,12 +2,13 @@ import { useState } from "react";
 import { COLORS as T } from "../constants/theme";
 import SectionCard from "../components/SectionCard";
 
-export default function DashboardPage({ navigate, user }) {
+export default function DashboardPage({ navigate, user, onLogout }) {
   const [active, setActive] = useState("overview");
 
   const menu = [
     { id: "overview", label: "Dashboard", icon: "📊" },
     { id: "orders", label: "Recent Orders", icon: "📦" },
+    { id: "wishlist", label: "My Wishlist", icon: "❤️" },
     { id: "address", label: "Addresses", icon: "📍" },
     { id: "wellness", label: "Wellness Hub", icon: "🌿" },
     { id: "settings", label: "Settings", icon: "⚙️" },
@@ -16,8 +17,14 @@ export default function DashboardPage({ navigate, user }) {
   const stats = [
     { label: "Total Orders", value: "12", icon: "🛍️", col: T.gold },
     { label: "Wellness Points", value: "450", icon: "✨", col: T.green },
-    { label: "Saved Items", value: "8", icon: "❤️", col: "#E74C3C" },
+    { label: "Saved Items", value: wishlist?.length?.toString() || "0", icon: "❤️", col: "#E74C3C" },
   ];
+
+  const handleLogout = () => {
+    if (window.confirm("Are you sure you want to logout?")) {
+      onLogout();
+    }
+  };
 
   return (
     <div style={{ paddingTop: 120, minHeight: "100vh", background: "#FDFCFB" }}>
@@ -29,12 +36,12 @@ export default function DashboardPage({ navigate, user }) {
             <div style={{ textAlign: "center", marginBottom: 40 }}>
               <div style={{ position: "relative", width: 100, height: 100, margin: "0 auto 20px" }}>
                 <div style={{ width: "100%", height: "100%", borderRadius: "32%", background: `linear-gradient(135deg, ${T.gold}, ${T.brownMid})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 40, color: "#fff", boxShadow: `0 15px 35px ${T.gold}40` }}>
-                  {user?.name?.[0] || "P"}
+                  {user?.name?.[0] || "U"}
                 </div>
                 <div style={{ position: "absolute", bottom: -5, right: -5, width: 32, height: 32, background: T.green, borderRadius: "50%", border: "4px solid #fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>✓</div>
               </div>
               <h3 style={{ fontFamily: "'Libre Baskerville', serif", fontSize: 20, fontWeight: 700, color: T.brown, margin: "0 0 6px" }}>
-                {user?.name || "Priya Sharma"}
+                {user?.name || "Guest User"}
               </h3>
               <div style={{ display: "inline-block", background: `${T.green}10`, color: T.green, padding: "4px 12px", borderRadius: "100px", fontSize: 12, fontWeight: 700 }}>Gold Member</div>
             </div>
@@ -56,13 +63,13 @@ export default function DashboardPage({ navigate, user }) {
                 </button>
               ))}
               <div style={{ height: 1, background: T.border, margin: "20px 10px" }} />
-              <button onClick={() => navigate("home")}
+              <button onClick={handleLogout}
                 style={{ display: "flex", alignItems: "center", gap: 14, padding: "16px 20px", borderRadius: "16px", border: "none", cursor: "pointer", fontSize: 15, fontWeight: 600, color: "#E74C3C", background: "transparent", textAlign: "left" }}>
                 <span>Logout 🚪</span>
               </button>
             </nav>
           </div>
-
+          {/* ... Rewards section remains ... */}
           <div style={{ marginTop: 24, padding: "28px", borderRadius: "32px", background: `linear-gradient(135deg, ${T.gold}, ${T.brownMid})`, color: "#fff", position: "relative", overflow: "hidden", boxShadow: `0 15px 35px ${T.gold}30` }}>
             <div style={{ position: "absolute", top: -20, right: -20, opacity: 0.2, fontSize: 100 }}>🍯</div>
             <div style={{ position: "relative", zIndex: 1 }}>
@@ -71,7 +78,7 @@ export default function DashboardPage({ navigate, user }) {
                 <span style={{ fontSize: 36, fontWeight: 900 }}>450</span>
                 <span style={{ fontSize: 14, fontWeight: 700, opacity: 0.9 }}>Points</span>
               </div>
-              <p style={{ fontSize: 13, fontWeight: 500, lineHeight: 1.5, marginBottom: 16, opacity: 0.9 }}>You're 50 points away from a <strong>FREE</strong> organic gift box!</p>
+              <p style={{ fontSize: 13, fontWeight: 500, lineHeight: 1.7, marginBottom: 16, opacity: 0.9 }}>You're 50 points away from a <strong>FREE</strong> organic gift box!</p>
               <div style={{ height: 6, background: "rgba(255,255,255,0.2)", borderRadius: 3, marginBottom: 20 }}>
                 <div style={{ width: "90%", height: "100%", background: "#fff", borderRadius: 3, boxShadow: "0 0 10px #fff" }} />
               </div>
@@ -82,7 +89,6 @@ export default function DashboardPage({ navigate, user }) {
                 onMouseLeave={e => e.target.style.transform = "none"}>
                 Redeem Rewards
               </button>
-
             </div>
           </div>
         </aside>
@@ -92,10 +98,10 @@ export default function DashboardPage({ navigate, user }) {
           {active === "overview" && (
             <div>
               <div style={{ marginBottom: 44 }}>
-                <h1 style={{ fontFamily: "'Libre Baskerville', serif", fontSize: 36, color: T.brown, margin: "0 0 12px" }}>Welcome Back, Priya!</h1>
+                <h1 style={{ fontFamily: "'Libre Baskerville', serif", fontSize: 36, color: T.brown, margin: "0 0 12px" }}>Welcome Back, {user?.name?.split(' ')[0] || "User"}!</h1>
                 <p style={{ color: T.textLight, fontSize: 16 }}>Here is what's happening with your wellness journey today.</p>
               </div>
-
+              {/* ... Stats and Recent Orders sections remain ... */}
               <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24, marginBottom: 44 }}>
                 {stats.map(s => (
                   <div key={s.label} style={{ background: "#fff", borderRadius: "24px", padding: "32px", border: `1px solid ${T.border}`, boxShadow: "0 10px 30px rgba(0,0,0,0.02)" }}>
@@ -145,7 +151,7 @@ export default function DashboardPage({ navigate, user }) {
               </div>
             </div>
           )}
-
+          {/* ... other active sections remain ... */}
           {active === "orders" && (
             <div className="scale-in">
               <h2 style={{ fontFamily: "'Libre Baskerville', serif", fontSize: 32, color: T.brown, marginBottom: 32 }}>Your Order History</h2>
@@ -170,6 +176,39 @@ export default function DashboardPage({ navigate, user }) {
                   </button>
                 </div>
               ))}
+            </div>
+          )}
+
+          {active === "wishlist" && (
+            <div className="scale-in">
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 32 }}>
+                <h2 style={{ fontFamily: "'Libre Baskerville', serif", fontSize: 32, color: T.brown, margin: 0 }}>My Wishlist</h2>
+                <div style={{ fontSize: 16, color: T.textLight }}>{wishlist?.length || 0} Items</div>
+              </div>
+              
+              {(!wishlist || wishlist.length === 0) ? (
+                <div style={{ background: "#fff", borderRadius: "32px", padding: "80px 20px", textAlign: "center", border: `1px solid ${T.border}` }}>
+                  <div style={{ fontSize: 64, marginBottom: 20 }}>🤍</div>
+                  <h3 style={{ fontFamily: "'Libre Baskerville',serif", fontSize: 22, color: T.brown, marginBottom: 10 }}>Your Wishlist is Empty</h3>
+                  <p style={{ color: T.textMid, marginBottom: 30 }}>Save your favorite items here to find them easily later.</p>
+                  <button onClick={() => navigate("shop")} style={{ background: T.gold, color: "#fff", border: "none", borderRadius: 100, padding: "14px 32px", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>Explore Products</button>
+                </div>
+              ) : (
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))", gap: 24 }}>
+                  {wishlist.map(p => (
+                    <div key={p.id} style={{ background: "#fff", borderRadius: 24, padding: 20, border: `1px solid ${T.border}`, display: "flex", flexDirection: "column", position: "relative" }}>
+                      <div style={{ background: `linear-gradient(135deg, ${p.color}20, ${T.goldPale})`, height: 160, borderRadius: 16, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 80, marginBottom: 16 }}>{p.emoji}</div>
+                      <h4 style={{ fontFamily: "'Libre Baskerville',serif", fontSize: 18, color: T.brown, margin: "0 0 8px" }}>{p.name}</h4>
+                      <div style={{ fontSize: 16, fontWeight: 700, color: T.textDark, marginBottom: 16 }}>₹{p.price.toLocaleString()}</div>
+                      <button onClick={() => navigate("detail", p.id)} style={{ width: "100%", padding: "10px", background: "none", border: `1.5px solid ${T.gold}`, borderRadius: 12, color: T.gold, fontWeight: 700, cursor: "pointer", transition: "all 0.2s", marginTop: "auto" }}
+                        onMouseEnter={e => { e.target.style.background = T.gold; e.target.style.color = "#fff"; }}
+                        onMouseLeave={e => { e.target.style.background = "none"; e.target.style.color = T.gold; }}>
+                        View Product
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 

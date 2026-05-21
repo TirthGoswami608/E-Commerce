@@ -5,6 +5,7 @@ export default function Navbar({ cartCount, navigate, user }) {
   const [scrolled, setScrolled] = useState(false);
   const [visible, setVisible] = useState(true);
   const [lastScroll, setLastScroll] = useState(0);
+  const [visibleDropdown, setVisibleDropdown] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -94,14 +95,15 @@ export default function Navbar({ cartCount, navigate, user }) {
         </ul>
 
         {/* Actions */}
-        <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
           <button onClick={() => navigate("cart")} style={{ 
             position: "relative", background: "rgba(74, 44, 10, 0.04)", 
             border: "none", cursor: "pointer", fontSize: 22, 
-            padding: "10px", borderRadius: "12px", transition: "all 0.2s"
+            padding: "10px", borderRadius: "12px", transition: "all 0.2s",
+            display: "flex", alignItems: "center", justifyContent: "center"
           }}
-            onMouseEnter={e => e.target.style.background = "rgba(74, 44, 10, 0.08)"}
-            onMouseLeave={e => e.target.style.background = "rgba(74, 44, 10, 0.04)"}>
+            onMouseEnter={e => e.currentTarget.style.background = "rgba(74, 44, 10, 0.08)"}
+            onMouseLeave={e => e.currentTarget.style.background = "rgba(74, 44, 10, 0.04)"}>
             🛒
             {cartCount > 0 && (
               <span style={{ 
@@ -114,25 +116,68 @@ export default function Navbar({ cartCount, navigate, user }) {
             )}
           </button>
           
-          <button
-            onClick={() => navigate(user ? "dashboard" : "login")}
-            style={{ 
-              background: `linear-gradient(135deg, ${T.gold}, ${T.brownMid})`, 
-              border: "none", borderRadius: "14px", padding: "12px 28px", 
-              color: "#fff", fontWeight: 700, fontSize: 14, cursor: "pointer", 
-              letterSpacing: "0.5px", transition: "all 0.3s", 
-              boxShadow: `0 10px 25px ${T.gold}40` 
-            }}
-            onMouseEnter={e => {
-              e.target.style.transform = "translateY(-2px)";
-              e.target.style.boxShadow = `0 15px 30px ${T.gold}50`;
-            }}
-            onMouseLeave={e => {
-              e.target.style.transform = "none";
-              e.target.style.boxShadow = `0 10px 25px ${T.gold}40`;
-            }}>
-            {user ? "My Account" : "Sign In"}
-          </button>
+          {user ? (
+            <div style={{ position: "relative" }} onMouseEnter={() => setVisibleDropdown(true)} onMouseLeave={() => setVisibleDropdown(false)}>
+              <button
+                onClick={() => navigate("dashboard")}
+                style={{ 
+                  background: `linear-gradient(135deg, ${T.gold}, ${T.brownMid})`, 
+                  border: "none", borderRadius: "14px", padding: "12px 20px", 
+                  color: "#fff", fontWeight: 700, fontSize: 14, cursor: "pointer", 
+                  display: "flex", alignItems: "center", gap: 10,
+                  transition: "all 0.3s", boxShadow: `0 8px 20px ${T.gold}30` 
+                }}>
+                <div style={{ width: 24, height: 24, borderRadius: "50%", background: "rgba(255,255,255,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12 }}>👤</div>
+                {user.name.split(' ')[0]}
+              </button>
+              
+              {visibleDropdown && (
+                <div style={{ 
+                  position: "absolute", top: "100%", right: 0, width: 200, 
+                  background: "#fff", borderRadius: "16px", padding: "12px", 
+                  marginTop: 10, boxShadow: "0 15px 50px rgba(0,0,0,0.15)", 
+                  border: `1px solid ${T.border}`, zIndex: 1001,
+                  animation: "fadeIn 0.2s ease-out" 
+                }}>
+                  {[["Dashboard", "dashboard"], ["My Orders", "orders"], ["Profile Settings", "dashboard"], ["Redeem Points", "redeem"]].map(([lbl, tg]) => (
+                    <button key={lbl} onClick={() => { navigate(tg); setVisibleDropdown(false); }}
+                      style={{ 
+                        display: "block", width: "100%", textAlign: "left", padding: "10px 14px", 
+                        background: "none", border: "none", fontSize: 14, fontWeight: 600, 
+                        color: T.textDark, cursor: "pointer", borderRadius: "8px", transition: "all 0.2s" 
+                      }}
+                      onMouseEnter={e => e.target.style.background = T.ivory}
+                      onMouseLeave={e => e.target.style.background = "none"}>
+                      {lbl}
+                    </button>
+                  ))}
+                  <div style={{ height: 1, background: T.border, margin: "8px 0" }} />
+                  <button onClick={() => { if(window.confirm("Logout?")) { localStorage.removeItem("hm_user"); window.location.reload(); } }}
+                    style={{ 
+                      display: "block", width: "100%", textAlign: "left", padding: "10px 14px", 
+                      background: "none", border: "none", fontSize: 14, fontWeight: 700, 
+                      color: "#e74c3c", cursor: "pointer", borderRadius: "8px" 
+                    }}>
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <button
+              onClick={() => navigate("login")}
+              style={{ 
+                background: `linear-gradient(135deg, ${T.gold}, ${T.brownMid})`, 
+                border: "none", borderRadius: "14px", padding: "12px 28px", 
+                color: "#fff", fontWeight: 700, fontSize: 14, cursor: "pointer", 
+                letterSpacing: "0.5px", transition: "all 0.3s", 
+                boxShadow: `0 10px 25px ${T.gold}40` 
+              }}
+              onMouseEnter={e => { e.target.style.transform = "translateY(-2px)"; e.target.style.boxShadow = `0 15px 30px ${T.gold}50`; }}
+              onMouseLeave={e => { e.target.style.transform = "none"; e.target.style.boxShadow = `0 10px 25px ${T.gold}40`; }}>
+              Sign In
+            </button>
+          )}
         </div>
       </div>
     </nav>

@@ -6,13 +6,19 @@ import BtnP from "../components/BtnP";
 import BtnO from "../components/BtnO";
 import { CART_ITEMS } from "../constants/data";
 
-export default function CheckoutPage({ navigate }) {
+export default function CheckoutPage({ navigate, cart, onClearCart }) {
   const [payMethod, setPayMethod] = useState("razorpay");
   const [orderPlaced, setOrder] = useState(false);
   const [form, setForm] = useState({ name: "Priya Sharma", phone: "+91 98765 43210", email: "priya@example.com", address: "42, Panchvati Society, Ambawadi", city: "Ahmedabad", state: "Gujarat", pincode: "380015" });
-  const sub = CART_ITEMS.reduce((s, i) => s + i.price * i.qty, 0);
+  
+  const sub = cart.reduce((s, i) => s + i.price * i.qty, 0);
   const del = sub >= 999 ? 0 : 99;
   const total = sub + del;
+
+  const handlePlaceOrder = () => {
+    setOrder(true);
+    onClearCart();
+  };
 
   if (orderPlaced) return (
     <div style={{ paddingTop: 70, minHeight: "80vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
@@ -21,10 +27,6 @@ export default function CheckoutPage({ navigate }) {
         <h2 style={{ fontFamily: "'Libre Baskerville',serif", fontSize: 28, color: T.brown, marginBottom: 10 }}>Order Confirmed!</h2>
         <p style={{ color: T.textMid, lineHeight: 1.7, marginBottom: 6 }}>Thank you for choosing H-Motive Organics.</p>
         <p style={{ color: T.textLight, fontSize: 13, marginBottom: 28 }}>Order <strong>#HM-2026-0893</strong> will arrive in 3–5 business days.</p>
-        <div style={{ background: T.goldPale, borderRadius: T.r, padding: 18, marginBottom: 28, textAlign: "left" }}>
-          {CART_ITEMS.map(i => <div key={i.name} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: T.textMid, marginBottom: 4 }}><span>{i.emoji} {i.name} ×{i.qty}</span><strong>₹{(i.price * i.qty).toLocaleString()}</strong></div>)}
-          <div style={{ borderTop: "1px dashed rgba(192,127,36,.25)", marginTop: 8, paddingTop: 8, display: "flex", justifyContent: "space-between", fontWeight: 700, color: T.brown }}><span>Total Paid</span><span>₹{total.toLocaleString()}</span></div>
-        </div>
         <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
           <BtnP onClick={() => navigate("orders")} style={{ padding: "12px 24px", fontSize: 14 }}>Track Order</BtnP>
           <BtnO onClick={() => navigate("shop")} style={{ padding: "12px 24px", fontSize: 14 }}>Continue Shopping</BtnO>
@@ -96,16 +98,20 @@ export default function CheckoutPage({ navigate }) {
         {/* Summary */}
         <SectionCard style={{ position: "sticky", top: 140, boxShadow: T.shL }}>
           <h3 style={{ fontFamily: "'Libre Baskerville',serif", fontSize: 18, fontWeight: 700, color: T.brown, marginBottom: 18 }}>Order Summary</h3>
-          {CART_ITEMS.map(i => (
-            <div key={i.name} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderBottom: `1px solid rgba(192,127,36,.08)` }}>
-              <div style={{ background: i.bg, borderRadius: 10, padding: "8px 6px", fontSize: 28, flexShrink: 0 }}>{i.emoji}</div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: T.textDark }}>{i.name}</div>
-                <div style={{ fontSize: 11, color: T.textLight }}>{i.weight} · Qty: {i.qty}</div>
+          {cart.length === 0 ? (
+            <p style={{ fontSize: 14, color: T.textMid, textAlign: "center", padding: "20px 0" }}>Your cart is empty</p>
+          ) : (
+            cart.map(i => (
+              <div key={i.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderBottom: `1px solid rgba(192,127,36,.08)` }}>
+                <div style={{ background: i.color || T.goldPale, borderRadius: 10, padding: "8px 6px", fontSize: 28, flexShrink: 0 }}>{i.emoji}</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: T.textDark }}>{i.name}</div>
+                  <div style={{ fontSize: 11, color: T.textLight }}>Qty: {i.qty}</div>
+                </div>
+                <div style={{ fontFamily: "'Libre Baskerville',serif", fontSize: 14, fontWeight: 700, color: T.brown }}>₹{(i.price * i.qty).toLocaleString()}</div>
               </div>
-              <div style={{ fontFamily: "'Libre Baskerville',serif", fontSize: 14, fontWeight: 700, color: T.brown }}>₹{(i.price * i.qty).toLocaleString()}</div>
-            </div>
-          ))}
+            ))
+          )}
           <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 10 }}>
             {[["Subtotal", `₹${sub.toLocaleString()}`], ["Delivery", del === 0 ? "FREE 🎉" : `₹${del}`, del === 0 ? T.green : null]].map(([l, v, c]) => (
               <div key={l} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: c || T.textMid }}><span>{l}</span><span style={{ fontWeight: 600, color: c || T.textMid }}>{v}</span></div>
@@ -115,7 +121,7 @@ export default function CheckoutPage({ navigate }) {
               <span style={{ fontFamily: "'Libre Baskerville',serif", fontSize: 22, fontWeight: 700, color: T.brown }}>₹{total.toLocaleString()}</span>
             </div>
           </div>
-          <BtnP onClick={() => setOrder(true)} style={{ width: "100%", padding: "15px", fontSize: 15, marginTop: 20, textAlign: "center" }}>🔒 Place Order →</BtnP>
+          <BtnP onClick={handlePlaceOrder} style={{ width: "100%", padding: "15px", fontSize: 15, marginTop: 20, textAlign: "center" }} disabled={cart.length === 0}>🔒 Place Order →</BtnP>
           <div style={{ display: "flex", justifyContent: "center", gap: 14, marginTop: 12 }}>
             {["🔒 SSL Secure", "✅ Verified", "📦 Free Returns"].map(x => <span key={x} style={{ fontSize: 11, color: T.textLight }}>{x}</span>)}
           </div>

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { COLORS } from '../constants/theme';
 
-export default function ProductCard({ product, onAddToCart, navigate }) {
+export default function ProductCard({ product, onAddToCart, navigate, isWishlisted, onToggleWishlist, onQuickView }) {
   const [added, setAdded] = useState(false);
 
   const handleAdd = () => {
@@ -16,7 +16,7 @@ export default function ProductCard({ product, onAddToCart, navigate }) {
         background: "#fff", borderRadius: "24px", overflow: "hidden", 
         boxShadow: "0 10px 30px rgba(0,0,0,0.04)", border: `1px solid ${COLORS.gold}15`, 
         transition: "all 0.5s cubic-bezier(0.4, 0, 0.2, 1)", cursor: "pointer",
-        position: "relative"
+        position: "relative", display: "flex", flexDirection: "column"
       }}
       onMouseEnter={e => { 
         e.currentTarget.style.transform = "translateY(-10px)"; 
@@ -40,6 +40,24 @@ export default function ProductCard({ product, onAddToCart, navigate }) {
           background: "radial-gradient(circle, rgba(255,255,255,0.8) 0%, transparent 70%)" 
         }} />
         <span style={{ zIndex: 1, transition: "transform 0.5s ease" }} className="card-emoji">{product.emoji}</span>
+        
+        {/* Wishlist Button */}
+        {onToggleWishlist && (
+          <button 
+            onClick={(e) => { e.stopPropagation(); onToggleWishlist(product); }}
+            style={{ 
+              position: "absolute", top: 16, left: 16, zIndex: 2,
+              background: "#fff", border: "none", borderRadius: "50%",
+              width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center",
+              cursor: "pointer", fontSize: 16, boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
+              color: isWishlisted ? "#e74c3c" : COLORS.textLight, transition: "all 0.2s"
+            }}
+            onMouseEnter={e => e.target.style.transform = "scale(1.1)"}
+            onMouseLeave={e => e.target.style.transform = "scale(1)"}>
+            {isWishlisted ? "❤️" : "🤍"}
+          </button>
+        )}
+
         {product.tag && (
           <span style={{ 
             position: "absolute", top: 16, right: 16, background: COLORS.gold, 
@@ -48,15 +66,33 @@ export default function ProductCard({ product, onAddToCart, navigate }) {
             zIndex: 2, boxShadow: "0 4px 12px rgba(192,127,36,0.3)"
           }}>{product.tag}</span>
         )}
+
+        {/* Quick View Button */}
+        {onQuickView && (
+          <button 
+            onClick={(e) => { e.stopPropagation(); onQuickView(product); }}
+            style={{
+              position: "absolute", bottom: 16, left: "50%", transform: "translateX(-50%)",
+              background: "rgba(255,255,255,0.9)", border: "none", borderRadius: 30,
+              padding: "8px 16px", fontSize: 12, fontWeight: 700, color: COLORS.brown,
+              cursor: "pointer", zIndex: 2, boxShadow: "0 4px 15px rgba(0,0,0,0.1)",
+              opacity: 0, transition: "all 0.3s", className: "quick-view-btn"
+            }}>
+            👁️ Quick View
+          </button>
+        )}
+        <style>{`
+          div:hover > div > .quick-view-btn { opacity: 1 !important; transform: translate(-50%, -5px) !important; }
+        `}</style>
       </div>
 
       {/* Info Area */}
-      <div style={{ padding: "24px", textAlign: "left" }}>
+      <div style={{ padding: "24px", textAlign: "left", flex: 1, display: "flex", flexDirection: "column" }}>
         <div style={{ fontSize: 11, color: COLORS.green, fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase", marginBottom: 8 }}>{product.category}</div>
         <h3 style={{ fontFamily: "'Libre Baskerville', serif", fontSize: 18, color: COLORS.textDark, margin: "0 0 10px", fontWeight: 700 }}>{product.name}</h3>
-        <p style={{ fontSize: 13, color: COLORS.textLight, margin: "0 0 20px", lineHeight: 1.5, height: 40, overflow: "hidden" }}>{product.desc}</p>
+        <p style={{ fontSize: 13, color: COLORS.textLight, margin: "0 0 20px", lineHeight: 1.5, height: 40, overflow: "hidden", flex: 1 }}>{product.desc}</p>
         
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginTop: "auto" }}>
           <div style={{ fontSize: 22, fontWeight: 800, color: COLORS.brown }}>₹{product.price.toLocaleString()}</div>
           <button 
             onClick={(e) => { e.stopPropagation(); handleAdd(); }}

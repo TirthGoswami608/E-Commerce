@@ -9,9 +9,15 @@ export default function ShopPage({ navigate, onAdd }) {
   const [price, setPrice] = useState(5000);
   const [sort, setSort] = useState("default");
   const [visible, setVisible] = useState(9);
+  const [search, setSearch] = useState("");
+  const [quickViewProduct, setQuickViewProduct] = useState(null);
 
   const filtered = products
-    .filter(p => (cat === "All" || p.category === cat) && p.price <= price)
+    .filter(p => 
+      (cat === "All" || p.category === cat) && 
+      p.price <= price &&
+      (p.name.toLowerCase().includes(search.toLowerCase()) || p.desc.toLowerCase().includes(search.toLowerCase()))
+    )
     .sort((a, b) => {
       if (sort === "low") return a.price - b.price;
       if (sort === "high") return b.price - a.price;
@@ -23,10 +29,28 @@ export default function ShopPage({ navigate, onAdd }) {
     <div style={{ paddingTop: 70 }}>
       {/* Header */}
       <div style={{ background: `linear-gradient(135deg,${T.ivory},${T.goldPale})`, padding: "80px 3% 60px", borderBottom: `1px solid ${T.border}` }}>
-        <div style={{ maxWidth: 1600, margin: "0 auto" }}>
-          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "3px", textTransform: "uppercase", color: T.green, display: "block", marginBottom: 12 }}>Handcrafted Selection</span>
-          <h1 style={{ fontFamily: "'Libre Baskerville',serif", fontSize: "clamp(32px,5vw,56px)", fontWeight: 700, color: T.brown, marginBottom: 16, lineHeight: 1.1 }}>Our Organic Collection</h1>
-          <p style={{ fontSize: 17, color: T.textLight, maxWidth: 520, lineHeight: 1.8 }}>Curated with care from small-scale sustainable farms, bringing you nature's purest harvest in its rawest form.</p>
+        <div style={{ maxWidth: 1600, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 32 }}>
+          <div>
+            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "3px", textTransform: "uppercase", color: T.green, display: "block", marginBottom: 12 }}>Handcrafted Selection</span>
+            <h1 style={{ fontFamily: "'Libre Baskerville',serif", fontSize: "clamp(32px,5vw,56px)", fontWeight: 700, color: T.brown, marginBottom: 16, lineHeight: 1.1 }}>Our Organic Collection</h1>
+            <p style={{ fontSize: 17, color: T.textLight, maxWidth: 520, lineHeight: 1.8 }}>Curated with care from small-scale sustainable farms, bringing you nature's purest harvest in its rawest form.</p>
+          </div>
+          <div style={{ position: "relative", width: "100%", maxWidth: 400 }}>
+            <input 
+              type="text" 
+              placeholder="Search products..." 
+              value={search} 
+              onChange={e => setSearch(e.target.value)}
+              style={{ 
+                width: "100%", padding: "18px 24px", paddingLeft: 56, borderRadius: "20px", 
+                border: `2px solid ${T.border}`, fontSize: 16, outline: "none", 
+                transition: "all 0.3s", background: "#fff", boxShadow: "0 10px 30px rgba(0,0,0,0.03)" 
+              }}
+              onFocus={e => { e.target.style.borderColor = T.gold; e.target.style.boxShadow = "0 15px 40px rgba(192,127,36,0.1)"; }}
+              onBlur={e => { e.target.style.borderColor = T.border; e.target.style.boxShadow = "0 10px 30px rgba(0,0,0,0.03)"; }}
+            />
+            <span style={{ position: "absolute", left: 22, top: "50%", transform: "translateY(-50%)", fontSize: 20, opacity: 0.5 }}>🔍</span>
+          </div>
         </div>
       </div>
 
@@ -111,7 +135,17 @@ export default function ShopPage({ navigate, onAdd }) {
           ) : (
             <>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 32, marginBottom: 60 }}>
-                {filtered.slice(0, visible).map(p => <ProductCard key={p.id} product={p} onAddToCart={onAdd} navigate={navigate} />)}
+                {filtered.slice(0, visible).map(p => 
+                  <ProductCard 
+                    key={p.id} 
+                    product={p} 
+                    onAddToCart={onAdd} 
+                    navigate={navigate} 
+                    isWishlisted={wishlist?.some(w => w.id === p.id)} 
+                    onToggleWishlist={onToggleWishlist} 
+                    onQuickView={setQuickViewProduct} 
+                  />
+                )}
               </div>
               
               {visible < filtered.length && (
@@ -128,6 +162,36 @@ export default function ShopPage({ navigate, onAdd }) {
           )}
         </div>
       </div>
+
+      {/* Quick View Modal */}
+      {quickViewProduct && (
+        <div style={{ 
+          position: "fixed", top: 0, left: 0, width: "100%", height: "100%", 
+          background: "rgba(0,0,0,0.4)", backdropFilter: "blur(4px)", zIndex: 10000, 
+          display: "flex", alignItems: "center", justifyContent: "center", padding: 20 
+        }} onClick={() => setQuickViewProduct(null)}>
+          <div style={{ 
+            background: "#fff", borderRadius: 32, width: "100%", maxWidth: 800, 
+            display: "grid", gridTemplateColumns: "1fr 1fr", overflow: "hidden", 
+            boxShadow: "0 20px 60px rgba(0,0,0,0.15)", position: "relative" 
+          }} onClick={e => e.stopPropagation()}>
+            <button onClick={() => setQuickViewProduct(null)} style={{ position: "absolute", top: 16, right: 16, background: "rgba(0,0,0,0.05)", border: "none", width: 36, height: 36, borderRadius: "50%", cursor: "pointer", fontSize: 18, zIndex: 10 }}>×</button>
+            <div style={{ background: `linear-gradient(135deg, ${quickViewProduct.color}40, #fff)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 140, position: "relative" }}>
+              <span className="card-emoji">{quickViewProduct.emoji}</span>
+            </div>
+            <div style={{ padding: "40px 32px", display: "flex", flexDirection: "column" }}>
+              <span style={{ fontSize: 12, color: T.green, fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase", marginBottom: 8 }}>{quickViewProduct.category}</span>
+              <h2 style={{ fontFamily: "'Libre Baskerville',serif", fontSize: 28, color: T.brown, marginBottom: 16 }}>{quickViewProduct.name}</h2>
+              <div style={{ fontSize: 24, fontWeight: 800, color: T.brown, marginBottom: 16 }}>₹{quickViewProduct.price.toLocaleString()}</div>
+              <p style={{ fontSize: 14, color: T.textLight, lineHeight: 1.6, marginBottom: 24, flex: 1 }}>{quickViewProduct.desc}</p>
+              <div style={{ display: "flex", gap: 12 }}>
+                <button onClick={() => { onAdd(quickViewProduct); setQuickViewProduct(null); }} style={{ flex: 1, background: T.gold, color: "#fff", border: "none", borderRadius: 100, padding: "14px", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>Add to Cart 🛒</button>
+                <button onClick={() => { navigate("detail", quickViewProduct.id); }} style={{ flex: 1, background: "transparent", color: T.brown, border: `2px solid ${T.gold}`, borderRadius: 100, padding: "14px", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>View Details</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

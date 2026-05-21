@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import HeroSlider from './components/HeroSlider';
 import Navbar from './components/Navbar';
 import ProductCard from './components/ProductCard';
@@ -20,13 +20,35 @@ import RedeemPage from "./pages/RedeemPage";
 import ShopPage from "./pages/ShopPage";
 import SignupPage from "./pages/SignupPage";
 
-
-
 export default function App() {
   const [page, setPage] = useState("home");
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    const saved = localStorage.getItem("hm_user");
+    return saved ? JSON.parse(saved) : null;
+  });
   const [productId, setProductId] = useState(null);
-  const [cartCount, setCartCount] = useState(0);
+  const [cart, setCart] = useState(() => {
+    const saved = localStorage.getItem("hm_cart");
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [wishlist, setWishlist] = useState(() => {
+    const saved = localStorage.getItem("hm_wishlist");
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [toast, setToast] = useState(null);
+
+  // Persistence
+  useEffect(() => {
+    localStorage.setItem("hm_cart", JSON.stringify(cart));
+  }, [cart]);
+
+  useEffect(() => {
+    localStorage.setItem("hm_user", JSON.stringify(user));
+  }, [user]);
+
+  useEffect(() => {
+    localStorage.setItem("hm_wishlist", JSON.stringify(wishlist));
+  }, [wishlist]);
 
   const navigate = (p, id = null) => {
     setPage(p);
@@ -34,26 +56,70 @@ export default function App() {
     window.scrollTo(0, 0);
   };
 
-  const onAddToCart = () => setCartCount(c => c + 1);
+  const showToast = (msg) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const onAddToCart = (product, qty = 1) => {
+    setCart(prev => {
+      const existing = prev.find(item => item.id === product.id);
+      if (existing) {
+        return prev.map(item => item.id === product.id ? { ...item, qty: item.qty + qty } : item);
+      }
+      return [...prev, { ...product, qty }];
+    });
+    showToast(`${qty} ${product.name}${qty > 1 ? 's' : ''} added to cart!`);
+  };
+
+  const onUpdateQty = (id, delta) => {
+    setCart(prev => prev.map(item => item.id === id ? { ...item, qty: Math.max(1, item.qty + delta) } : item));
+  };
+
+  const onRemoveFromCart = (id) => {
+    setCart(prev => prev.filter(item => item.id !== id));
+  };
+
+  const onClearCart = () => setCart([]);
+
+  const onToggleWishlist = (product) => {
+    setWishlist(prev => {
+      if (prev.find(item => item.id === product.id)) {
+        showToast(`${product.name} removed from wishlist.`);
+        return prev.filter(item => item.id !== product.id);
+      }
+      showToast(`${product.name} added to wishlist!`);
+      return [...prev, product];
+    });
+  };
+
+  const onLogin = (userData) => {
+    setUser(userData);
+    navigate("dashboard");
+  };
+
+  const onLogout = () => {
+    setUser(null);
+    navigate("home");
+  };
 
   const featured = products.slice(0, 4);
   const exploreRange = products.slice(4, 8);
 
   const renderPage = () => {
     switch (page) {
-      case "login": return <LoginPage navigate={navigate} onLogin={setUser} />;
-      case "signup": return <SignupPage navigate={navigate} onLogin={setUser} />;
-      case "cart": return <CartPage navigate={navigate} />;
-      case "checkout": return <CheckoutPage navigate={navigate} />;
-      case "dashboard": return <DashboardPage navigate={navigate} user={user} onLogout={() => setUser(null)} />;
-      case "orders": return <OrdersPage navigate={navigate} />;
+      case "login": return <LoginPage navigate={navigate} onLogin={onLogin} />;
+      case "signup": return <SignupPage navigate={navigate} onLogin={onLogin} />;
+      case "cart": return <CartPage navigate={navigate} cart={cart} onUpdateQty={onUpdateQty} onRemove={onRemoveFromCart} />;
+      case "checkout": return <CheckoutPage navigate={navigate} cart={cart} onClearCart={onClearCart} />;
+      case "dashboard": return <DashboardPage navigate={navigate} user={user} onLogout={onLogout} wishlist={wishlist} />;
+      case "orders": return <OrdersPage navigate={navigate} user={user} />;
       case "about": return <AboutPage navigate={navigate} />;
       case "contact": return <ContactPage navigate={navigate} />;
-      case "shop": return <ShopPage navigate={navigate} onAdd={onAddToCart} />;
-      case "detail": return <ProductDetailPage productId={productId} navigate={navigate} onAdd={onAddToCart} />;
+      case "shop": return <ShopPage navigate={navigate} onAdd={onAddToCart} wishlist={wishlist} onToggleWishlist={onToggleWishlist} />;
+      case "detail": return <ProductDetailPage productId={productId} navigate={navigate} onAdd={onAddToCart} wishlist={wishlist} onToggleWishlist={onToggleWishlist} />;
       case "redeem": return <RedeemPage navigate={navigate} />;
       case "admin": return <AdminPage navigate={navigate} />;
-
 
       case "home":
       default: return (
@@ -69,7 +135,7 @@ export default function App() {
                 <p style={{ color: COLORS.textLight, fontSize: 16, maxWidth: 480, margin: "0 auto" }}>Our most-loved organic products, chosen for exceptional quality and proven results.</p>
               </div>
               <div className="products-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 32 }}>
-                {featured.map(p => <ProductCard key={p.id} product={p} onAddToCart={onAddToCart} navigate={navigate} />)}
+                {featured.map(p => <ProductCard key={p.id} product={p} onAddToCart={onAddToCart} navigate={navigate} isWishlisted={wishlist.some(w => w.id === p.id)} onToggleWishlist={onToggleWishlist} />)}
               </div>
             </div>
           </section>
@@ -88,7 +154,7 @@ export default function App() {
               </div>
 
               <div className="products-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 32, marginBottom: 48 }}>
-                {exploreRange.map(p => <ProductCard key={p.id} product={p} onAddToCart={onAddToCart} navigate={navigate} />)}
+                {exploreRange.map(p => <ProductCard key={p.id} product={p} onAddToCart={onAddToCart} navigate={navigate} isWishlisted={wishlist.some(w => w.id === p.id)} onToggleWishlist={onToggleWishlist} />)}
               </div>
 
               <div style={{ textAlign: "center" }}>
@@ -140,10 +206,40 @@ export default function App() {
               </div>
             </div>
           </section>
+
+          {/* Newsletter Section */}
+          <section style={{ padding: "80px 3%", background: "#fff" }}>
+            <div style={{ maxWidth: 1200, margin: "0 auto", background: `linear-gradient(135deg, ${COLORS.ivory} 0%, ${COLORS.goldPale} 100%)`, borderRadius: 40, padding: "60px 40px", textAlign: "center", border: `1px solid ${COLORS.border}`, position: "relative", overflow: "hidden" }}>
+              <div style={{ position: "absolute", top: -50, right: -50, fontSize: 180, opacity: 0.03, transform: "rotate(-15deg)" }}>🌿</div>
+              <div style={{ position: "absolute", bottom: -50, left: -50, fontSize: 180, opacity: 0.03, transform: "rotate(15deg)" }}>🍯</div>
+              
+              <div style={{ position: "relative", zIndex: 1 }}>
+                <span style={{ display: "inline-block", color: COLORS.green, fontSize: 12, fontWeight: 700, letterSpacing: "2.5px", textTransform: "uppercase", marginBottom: 12 }}>Join the Circle</span>
+                <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "clamp(26px, 3.5vw, 42px)", color: COLORS.textDark, margin: "0 0 16px", fontWeight: 800 }}>Subscribe for Wellness Wisdom</h2>
+                <p style={{ color: COLORS.textLight, fontSize: 16, maxWidth: 540, margin: "0 auto 40px", lineHeight: 1.8 }}>Get exclusive access to organic recipes, early product launches, and special member-only discounts delivered to your inbox.</p>
+                
+                <form onSubmit={e => { e.preventDefault(); showToast("Subscribed! Thank you for joining."); e.target.reset(); }} 
+                  style={{ maxWidth: 500, margin: "0 auto", display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
+                  <input type="email" required placeholder="Enter your email address" 
+                    style={{ flex: 1, minWidth: 280, padding: "18px 28px", borderRadius: 30, border: `2px solid ${COLORS.border}`, fontSize: 15, outline: "none", transition: "all 0.3s" }}
+                    onFocus={e => e.target.style.borderColor = COLORS.gold}
+                    onBlur={e => e.target.style.borderColor = COLORS.border}
+                  />
+                  <button type="submit" style={{ background: COLORS.brown, color: "#fff", border: "none", borderRadius: 30, padding: "18px 36px", fontSize: 15, fontWeight: 700, cursor: "pointer", boxShadow: "0 10px 25px rgba(74,44,10,0.15)", transition: "all 0.3s" }}
+                    onMouseEnter={e => { e.target.style.transform = "translateY(-2px)"; e.target.style.boxShadow = "0 15px 30px rgba(74,44,10,0.2)"; }}
+                    onMouseLeave={e => { e.target.style.transform = "none"; e.target.style.boxShadow = "0 10px 25px rgba(74,44,10,0.15)"; }}>
+                    Subscribe Now
+                  </button>
+                </form>
+                <p style={{ fontSize: 12, color: COLORS.textLight, marginTop: 24, opacity: 0.8 }}>We respect your privacy. Unsubscribe at any time.</p>
+              </div>
+            </div>
+          </section>
         </>
       );
     }
   };
+  const totalCartCount = cart.reduce((acc, item) => acc + item.qty, 0);
 
   return (
     <div style={{ fontFamily: "'Nunito', -apple-system, sans-serif", background: COLORS.white, color: COLORS.textDark, overflowX: "hidden" }}>
@@ -185,6 +281,25 @@ export default function App() {
 
         .fade-in { animation: fadeIn 0.8s ease-out forwards; }
         .scale-in { animation: scaleIn 0.5s ease-out forwards; }
+
+        .toast {
+          position: fixed;
+          bottom: 30px;
+          right: 30px;
+          background: ${COLORS.brown};
+          color: #fff;
+          padding: 16px 24px;
+          border-radius: 12px;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+          z-index: 9999;
+          animation: slideInRight 0.3s ease-out;
+          font-weight: 600;
+        }
+
+        @keyframes slideInRight {
+          from { transform: translateX(100%); opacity: 0; }
+          to { transform: translateX(0); opacity: 1; }
+        }
 
         /* Mobile & Tablet Responsive Design */
         @media (max-width: 1024px) {
@@ -232,8 +347,9 @@ export default function App() {
         ::-webkit-scrollbar-thumb:hover { background: ${COLORS.brownMid}; }
       `}</style>
 
-      {page !== "admin" && <Navbar cartCount={cartCount} navigate={navigate} user={user} />}
+      {page !== "admin" && <Navbar cartCount={totalCartCount} navigate={navigate} user={user} />}
 
+      {toast && <div className="toast">{toast}</div>}
 
       {renderPage()}
 

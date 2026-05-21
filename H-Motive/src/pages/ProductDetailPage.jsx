@@ -13,7 +13,7 @@ export default function ProductDetailPage({ productId, navigate, onAdd }) {
   const related = products.filter(x => x.id !== p.id && x.category === p.category).slice(0, 4);
 
   const handleAdd = () => {
-    onAdd();
+    onAdd(p, qty);
     setAdded(true);
     setTimeout(() => setAdded(false), 1800);
   };
@@ -128,13 +128,16 @@ export default function ProductDetailPage({ productId, navigate, onAdd }) {
                   onMouseLeave={e => { e.target.style.transform = "none"; e.target.style.boxShadow = `0 10px 25px ${added ? T.green : T.gold}40`; }}>
                   {added ? "✓ Successfully Added!" : "Add to Cart  — ₹" + (p.price * qty).toLocaleString()}
                 </button>
-                <button style={{ 
-                  width: 60, height: 60, borderRadius: "50%", border: `1px solid ${T.border}`, 
-                  background: "#fff", cursor: "pointer", fontSize: 22, color: T.brown, transition: "all 0.3s" 
+                <button 
+                  onClick={() => onToggleWishlist(p)}
+                  style={{ 
+                  width: 60, height: 60, borderRadius: "50%", border: `1px solid ${wishlist?.find(w => w.id === p.id) ? "transparent" : T.border}`, 
+                  background: wishlist?.find(w => w.id === p.id) ? "#e74c3c" : "#fff", cursor: "pointer", fontSize: 24, 
+                  color: wishlist?.find(w => w.id === p.id) ? "#fff" : T.textLight, transition: "all 0.3s" 
                 }}
-                onMouseEnter={e => { e.target.style.borderColor = T.gold; e.target.style.color = T.gold; }}
-                onMouseLeave={e => { e.target.style.borderColor = T.border; e.target.style.color = T.brown; }}>
-                  ♡
+                onMouseEnter={e => { e.target.style.transform = "scale(1.05)"; }}
+                onMouseLeave={e => { e.target.style.transform = "scale(1)"; }}>
+                  {wishlist?.find(w => w.id === p.id) ? "❤️" : "🤍"}
                 </button>
               </div>
             </div>
@@ -209,7 +212,7 @@ export default function ProductDetailPage({ productId, navigate, onAdd }) {
               <button onClick={() => navigate("shop")} style={{ background: "none", border: "none", color: T.gold, fontWeight: 700, cursor: "pointer", fontSize: 15 }}>View Collection →</button>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 24 }}>
-              {related.map(rp => <ProductCard key={rp.id} product={rp} onAddToCart={onAdd} navigate={navigate} />)}
+              {related.map(rp => <ProductCard key={rp.id} product={rp} onAddToCart={onAdd} navigate={navigate} isWishlisted={wishlist?.some(w => w.id === rp.id)} onToggleWishlist={onToggleWishlist} />)}
             </div>
           </div>
         )}
