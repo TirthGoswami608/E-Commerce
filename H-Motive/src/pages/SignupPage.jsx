@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { COLORS as T } from "../constants/theme";
-import SectionCard from "../components/SectionCard";
-import FormInput from "../components/FormInput";
-import BtnP from "../components/BtnP";
+import SectionCard from "../components/product/SectionCard";
+import FormInput from "../components/ui/FormInput";
+import ButtonPrimary from "../components/ui/ButtonPrimary";
 
 export default function SignupPage({ navigate, onLogin }) {
   const [form, setForm] = useState({ firstName: "", lastName: "", email: "", phone: "", pass: "", confirm: "" });
@@ -49,7 +49,7 @@ export default function SignupPage({ navigate, onLogin }) {
           <input type="checkbox" defaultChecked style={{ accentColor: T.gold, marginTop: 2, flexShrink: 0 }} />
           I agree to the <button style={{ background: "none", border: "none", color: T.gold, fontWeight: 600, fontSize: 13, cursor: "pointer", padding: 0 }}>Terms</button> and <button style={{ background: "none", border: "none", color: T.gold, fontWeight: 600, fontSize: 13, cursor: "pointer", padding: 0 }}>Privacy Policy</button>
         </label>
-        <BtnP onClick={handleSignup} style={{ width: "100%", padding: "14px", fontSize: 15 }}>Create Account →</BtnP>
+        <ButtonPrimary onClick={handleSignup} style={{ width: "100%", padding: "14px", fontSize: 15 }}>Create Account →</ButtonPrimary>
         <div style={{ background: T.greenPale, borderRadius: T.rSm, padding: "12px 14px", marginTop: 16, display: "flex", alignItems: "flex-start", gap: 10 }}>
           <span style={{ fontSize: 18 }}>🎁</span>
           <span style={{ fontSize: 12, color: T.green, fontWeight: 500, lineHeight: 1.5 }}>Get <strong>₹200 off</strong> your first order! Code: <strong>WELCOME200</strong></span>

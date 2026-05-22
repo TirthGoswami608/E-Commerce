@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { COLORS as T } from "../constants/theme";
 import { products, reviews as globalReviews } from "../constants/data";
-import Stars from "../components/Stars";
-import ProductCard from "../components/ProductCard";
-import BtnP from "../components/BtnP";
+import Stars from "../components/ui/Stars";
+import ProductCard from "../components/product/ProductCard";
+import ButtonPrimary from "../components/ui/ButtonPrimary";
 
 export default function ProductDetailPage({ productId, navigate, onAdd }) {
   const p = products.find(x => x.id === productId) || products[0];

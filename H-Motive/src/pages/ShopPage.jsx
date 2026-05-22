@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { COLORS as T } from "../constants/theme";
 import { products, categories } from "../constants/data";
-import ProductCard from "../components/ProductCard";
-import SectionCard from "../components/SectionCard";
+import ProductCard from "../components/product/ProductCard";
+import SectionCard from "../components/product/SectionCard";
 
 export default function ShopPage({ navigate, onAdd }) {
   const [cat, setCat] = useState("All");

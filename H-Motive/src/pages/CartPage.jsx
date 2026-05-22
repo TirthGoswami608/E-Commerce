@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { COLORS as T } from "../constants/theme";
-import SectionCard from "../components/SectionCard";
-import BtnP from "../components/BtnP";
+import SectionCard from "../components/product/SectionCard";
+import ButtonPrimary from "../components/ui/ButtonPrimary";
 import { products } from "../constants/data";
 
 export default function CartPage({ navigate, cart, onUpdateQty, onRemove }) {
@@ -39,7 +39,7 @@ export default function CartPage({ navigate, cart, onUpdateQty, onRemove }) {
             <div style={{ fontSize: 72, marginBottom: 24 }}>🛒</div>
             <h2 style={{ fontFamily: "'Libre Baskerville',serif", fontSize: 26, color: T.brown, marginBottom: 12 }}>Your Cart is Empty</h2>
             <p style={{ color: T.textMid, marginBottom: 32 }}>Looks like you haven't added anything to your cart yet.</p>
-            <BtnP onClick={() => navigate("shop")} style={{ padding: "14px 40px" }}>Start Shopping →</BtnP>
+            <ButtonPrimary onClick={() => navigate("shop")} style={{ padding: "14px 40px" }}>Start Shopping →</ButtonPrimary>
           </div>
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "1fr 380px", gap: 32, alignItems: "start" }}>
@@ -112,7 +112,7 @@ export default function CartPage({ navigate, cart, onUpdateQty, onRemove }) {
                   <div style={{ fontSize: 11, color: T.textLight, marginTop: 6 }}>Try "ORGANIC10" or "WELCOME200"</div>
                 </div>
 
-                <BtnP onClick={() => navigate("checkout")} style={{ width: "100%", padding: "14px", fontSize: 15 }}>Proceed to Checkout →</BtnP>
+                <ButtonPrimary onClick={() => navigate("checkout")} style={{ width: "100%", padding: "14px", fontSize: 15 }}>Proceed to Checkout →</ButtonPrimary>
                 
                 <div style={{ textAlign: "center", marginTop: 20 }}>
                   <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Razorpay_logo.svg/1200px-Razorpay_logo.svg.png" alt="Razorpay" style={{ height: 18, opacity: 0.6 }} />

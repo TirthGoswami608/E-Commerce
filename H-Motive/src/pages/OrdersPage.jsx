@@ -74,9 +74,9 @@ export default function OrdersPage() {
                   <div style={{ padding: "10px 14px", background: "#FFF0F0", borderRadius: T.rSm, fontSize: 12, color: "#e74c3c", fontWeight: 500, marginBottom: 14 }}>❌ This order was cancelled.</div>
                 )}
                 <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                  <BtnP style={{ padding: "8px 18px", fontSize: 12 }}>View Details</BtnP>
-                  {o.status === "delivered" && <BtnO style={{ padding: "7px 16px", fontSize: 12 }}>⭐ Rate Order</BtnO>}
-                  <BtnO style={{ padding: "7px 16px", fontSize: 12 }}>📥 Invoice</BtnO>
+                  <ButtonPrimary style={{ padding: "8px 18px", fontSize: 12 }}>View Details</ButtonPrimary>
+                  {o.status === "delivered" && <ButtonOutline style={{ padding: "7px 16px", fontSize: 12 }}>⭐ Rate Order</ButtonOutline>}
+                  <ButtonOutline style={{ padding: "7px 16px", fontSize: 12 }}>📥 Invoice</ButtonOutline>
                 </div>
               </div>
             );

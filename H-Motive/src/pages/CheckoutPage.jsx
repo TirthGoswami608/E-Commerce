@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { COLORS as T } from "../constants/theme";
-import SectionCard from "../components/SectionCard";
-import FormInput from "../components/FormInput";
-import BtnP from "../components/BtnP";
-import BtnO from "../components/BtnO";
+import SectionCard from "../components/product/SectionCard";
+import FormInput from "../components/ui/FormInput";
+import ButtonPrimary from "../components/ui/ButtonPrimary";
+import ButtonOutline from "../components/ui/ButtonOutline";
 import { CART_ITEMS } from "../constants/data";
 
 export default function CheckoutPage({ navigate, cart, onClearCart }) {
@@ -28,8 +28,8 @@ export default function CheckoutPage({ navigate, cart, onClearCart }) {
         <p style={{ color: T.textMid, lineHeight: 1.7, marginBottom: 6 }}>Thank you for choosing H-Motive Organics.</p>
         <p style={{ color: T.textLight, fontSize: 13, marginBottom: 28 }}>Order <strong>#HM-2026-0893</strong> will arrive in 3–5 business days.</p>
         <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-          <BtnP onClick={() => navigate("orders")} style={{ padding: "12px 24px", fontSize: 14 }}>Track Order</BtnP>
-          <BtnO onClick={() => navigate("shop")} style={{ padding: "12px 24px", fontSize: 14 }}>Continue Shopping</BtnO>
+          <ButtonPrimary onClick={() => navigate("orders")} style={{ padding: "12px 24px", fontSize: 14 }}>Track Order</ButtonPrimary>
+          <ButtonOutline onClick={() => navigate("shop")} style={{ padding: "12px 24px", fontSize: 14 }}>Continue Shopping</ButtonOutline>
         </div>
       </SectionCard>
     </div>
@@ -121,7 +121,7 @@ export default function CheckoutPage({ navigate, cart, onClearCart }) {
               <span style={{ fontFamily: "'Libre Baskerville',serif", fontSize: 22, fontWeight: 700, color: T.brown }}>₹{total.toLocaleString()}</span>
             </div>
           </div>
-          <BtnP onClick={handlePlaceOrder} style={{ width: "100%", padding: "15px", fontSize: 15, marginTop: 20, textAlign: "center" }} disabled={cart.length === 0}>🔒 Place Order →</BtnP>
+          <ButtonPrimary onClick={handlePlaceOrder} style={{ width: "100%", padding: "15px", fontSize: 15, marginTop: 20, textAlign: "center" }} disabled={cart.length === 0}>🔒 Place Order →</ButtonPrimary>
           <div style={{ display: "flex", justifyContent: "center", gap: 14, marginTop: 12 }}>
             {["🔒 SSL Secure", "✅ Verified", "📦 Free Returns"].map(x => <span key={x} style={{ fontSize: 11, color: T.textLight }}>{x}</span>)}
           </div>

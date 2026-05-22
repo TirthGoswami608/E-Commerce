@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { COLORS as T } from "../constants/theme";
-import SectionCard from "../components/SectionCard";
-import FormInput from "../components/FormInput";
-import BtnP from "../components/BtnP";
+import SectionCard from "../components/product/SectionCard";
+import FormInput from "../components/ui/FormInput";
+import ButtonPrimary from "../components/ui/ButtonPrimary";
 import { FAQS } from "../constants/data";
 
 export default function ContactPage() {
@@ -33,7 +33,7 @@ export default function ContactPage() {
               <div style={{ fontSize: 56, marginBottom: 16 }}>✅</div>
               <h3 style={{ fontFamily: "'Libre Baskerville',serif", fontSize: 22, color: T.brown, marginBottom: 10 }}>Message Sent!</h3>
               <p style={{ color: T.textMid, marginBottom: 24 }}>We'll get back to you within 24 hours.</p>
-              <BtnP onClick={() => setSent(false)} style={{ padding: "11px 26px", fontWeight: 600 }}>Send Another</BtnP>
+              <ButtonPrimary onClick={() => setSent(false)} style={{ padding: "11px 26px", fontWeight: 600 }}>Send Another</ButtonPrimary>
             </div>
           ) : (
             <>
@@ -56,7 +56,7 @@ export default function ContactPage() {
                     onBlur={e => e.target.style.borderColor = T.border} />
                 </div>
               </div>
-              <BtnP onClick={handleSubmit} style={{ padding: "13px 30px", fontSize: 14 }}>Send Message →</BtnP>
+              <ButtonPrimary onClick={handleSubmit} style={{ padding: "13px 30px", fontSize: 14 }}>Send Message →</ButtonPrimary>
             </>
           )}
         </SectionCard>

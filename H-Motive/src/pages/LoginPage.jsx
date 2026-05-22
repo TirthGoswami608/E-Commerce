@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { COLORS as T } from "../constants/theme";
-import SectionCard from "../components/SectionCard";
-import FormInput from "../components/FormInput";
-import BtnP from "../components/BtnP";
+import SectionCard from "../components/product/SectionCard";
+import FormInput from "../components/ui/FormInput";
+import ButtonPrimary from "../components/ui/ButtonPrimary";
 
 export default function LoginPage({ navigate, onLogin }) {
   const [email, setEmail] = useState("priya@example.com");
@@ -62,7 +62,7 @@ export default function LoginPage({ navigate, onLogin }) {
           </label>
           <button style={{ background: "none", border: "none", fontSize: 13, color: T.gold, fontWeight: 600, cursor: "pointer" }}>Forgot password?</button>
         </div>
-        <BtnP onClick={handleLogin} style={{ width: "100%", padding: "14px", fontSize: 15 }}>Sign In →</BtnP>
+        <ButtonPrimary onClick={handleLogin} style={{ width: "100%", padding: "14px", fontSize: 15 }}>Sign In →</ButtonPrimary>
         <p style={{ textAlign: "center", fontSize: 13, color: T.textLight, marginTop: 20 }}>
           Don't have an account?{" "}
           <button onClick={() => navigate("signup")} style={{ background: "none", border: "none", color: T.gold, fontWeight: 600, fontSize: 13, cursor: "pointer" }}>Create Account</button>

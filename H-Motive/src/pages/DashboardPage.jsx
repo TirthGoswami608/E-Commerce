@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { COLORS as T } from "../constants/theme";
-import SectionCard from "../components/SectionCard";
+import SectionCard from "../components/product/SectionCard";
 
 export default function DashboardPage({ navigate, user, onLogout }) {
   const [active, setActive] = useState("overview");

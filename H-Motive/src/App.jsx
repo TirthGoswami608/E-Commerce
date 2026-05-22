@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import HeroSlider from './components/HeroSlider';
-import Navbar from './components/Navbar';
-import ProductCard from './components/ProductCard';
-import ReviewCard from './components/ReviewCard';
+import Navbar from './components/layout/Navbar';
+import ProductCard from './components/product/ProductCard';
+import ReviewCard from './components/reviews/ReviewCard';
 import { benefits, products, reviews } from './constants/data';
 import { COLORS } from './constants/theme';
 
