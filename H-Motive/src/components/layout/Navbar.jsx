@@ -128,7 +128,7 @@ export default function Navbar({ cartCount, navigate, user }) {
                   transition: "all 0.3s", boxShadow: `0 8px 20px ${T.gold}30` 
                 }}>
                 <div style={{ width: 24, height: 24, borderRadius: "50%", background: "rgba(255,255,255,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12 }}>👤</div>
-                {user.name.split(' ')[0]}
+                {user?.name?.split(' ')[0] || user?.email?.split('@')[0] || 'User'}
               </button>
               
               {visibleDropdown && (

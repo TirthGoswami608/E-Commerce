@@ -3,16 +3,49 @@ import { COLORS as T } from "../constants/theme";
 import SectionCard from "../components/product/SectionCard";
 import FormInput from "../components/ui/FormInput";
 import ButtonPrimary from "../components/ui/ButtonPrimary";
+import { api } from "../services/api";
 
-export default function SignupPage({ navigate, onLogin }) {
+export default function SignupPage({ navigate }) {
   const [form, setForm] = useState({ firstName: "", lastName: "", email: "", phone: "", pass: "", confirm: "" });
   const [showP, setShowP] = useState(false);
+  const [err, setErr] = useState("");
 
-  const handleSignup = () => {
-    if (!form.firstName || !form.email || !form.pass) return;
-    if (form.pass !== form.confirm) return;
-    onLogin({ name: `${form.firstName} ${form.lastName}`, email: form.email });
-    navigate("dashboard");
+  const handleSignup = async () => {
+    setErr("");
+
+    // Validation
+    if (!form.firstName || !form.email || !form.pass) {
+      setErr("Please fill in all required fields.");
+      return;
+    }
+
+    if (form.pass !== form.confirm) {
+      setErr("Passwords do not match.");
+      return;
+    }
+
+    try {
+      const response = await api.register({
+        first_name: form.firstName,
+        last_name: form.lastName,
+        email: form.email,
+        phone: form.phone,
+        password: form.pass,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setErr(data.message || "Registration failed.");
+        return;
+      }
+
+      alert("Account created successfully! Please log in.");
+      navigate("login");
+    } catch (error) {
+      console.error("Signup error:", error);
+      setErr("Unable to connect to the server. Please try again.");
+    }
   };
 
   const f = (k) => ({ value: form[k], onChange: e => setForm({ ...form, [k]: e.target.value }) });
@@ -45,6 +78,7 @@ export default function SignupPage({ navigate, onLogin }) {
           </div>
         </div>
         <FormInput label="Confirm Password *" type="password" placeholder="Repeat password" {...f("confirm")} />
+        {err && <p style={{ fontSize: 13, color: "#e74c3c", margin: "12px 0" }}>{err}</p>}
         <label style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 13, color: T.textMid, cursor: "pointer", marginBottom: 18 }}>
           <input type="checkbox" defaultChecked style={{ accentColor: T.gold, marginTop: 2, flexShrink: 0 }} />
           I agree to the <button style={{ background: "none", border: "none", color: T.gold, fontWeight: 600, fontSize: 13, cursor: "pointer", padding: 0 }}>Terms</button> and <button style={{ background: "none", border: "none", color: T.gold, fontWeight: 600, fontSize: 13, cursor: "pointer", padding: 0 }}>Privacy Policy</button>

@@ -1,5 +1,9 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
+const defaultHeaders = {
+  "Content-Type": "application/json",
+};
+
 export const api = {
   // Products
   getProducts: async () => {
@@ -18,5 +22,20 @@ export const api = {
     return response.json();
   },
 
-  // Add more API endpoints as needed
+  // Auth
+  register: async (payload) => {
+    return fetch(`${API_BASE_URL}/auth/register`, {
+      method: "POST",
+      headers: defaultHeaders,
+      body: JSON.stringify(payload),
+    });
+  },
+
+  login: async (payload) => {
+    return fetch(`${API_BASE_URL}/auth/login`, {
+      method: "POST",
+      headers: defaultHeaders,
+      body: JSON.stringify(payload),
+    });
+  },
 };

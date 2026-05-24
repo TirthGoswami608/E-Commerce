@@ -1,7 +1,7 @@
 import { COLORS as T } from "../constants/theme";
-import SectionCard from "../components/SectionCard";
-import BtnP from "../components/BtnP";
-import BtnO from "../components/BtnO";
+import SectionCard from "../components/product/SectionCard";
+import ButtonPrimary from "../components/ui/ButtonPrimary";
+import ButtonOutline from "../components/ui/ButtonOutline";
 import { ORDERS } from "../constants/data";
 
 export default function OrdersPage() {

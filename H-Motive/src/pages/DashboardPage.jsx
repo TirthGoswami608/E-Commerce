@@ -2,7 +2,7 @@ import { useState } from "react";
 import { COLORS as T } from "../constants/theme";
 import SectionCard from "../components/product/SectionCard";
 
-export default function DashboardPage({ navigate, user, onLogout }) {
+export default function DashboardPage({ navigate, user, onLogout, wishlist = [] }) {
   const [active, setActive] = useState("overview");
 
   const menu = [

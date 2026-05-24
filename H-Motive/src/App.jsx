@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import HeroSlider from './components/HeroSlider';
 import Navbar from './components/layout/Navbar';
 import ProductCard from './components/product/ProductCard';
@@ -21,7 +21,10 @@ import ShopPage from "./pages/ShopPage";
 import SignupPage from "./pages/SignupPage";
 
 export default function App() {
-  const [page, setPage] = useState("home");
+  const [page, setPage] = useState(() => {
+    const saved = localStorage.getItem("hm_user");
+    return saved ? "dashboard" : "home";
+  });
   const [user, setUser] = useState(() => {
     const saved = localStorage.getItem("hm_user");
     return saved ? JSON.parse(saved) : null;

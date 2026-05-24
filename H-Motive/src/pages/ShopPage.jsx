@@ -4,7 +4,7 @@ import { products, categories } from "../constants/data";
 import ProductCard from "../components/product/ProductCard";
 import SectionCard from "../components/product/SectionCard";
 
-export default function ShopPage({ navigate, onAdd }) {
+export default function ShopPage({ navigate, onAdd, wishlist, onToggleWishlist }) {
   const [cat, setCat] = useState("All");
   const [price, setPrice] = useState(5000);
   const [sort, setSort] = useState("default");

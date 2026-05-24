@@ -3,20 +3,43 @@ import { COLORS as T } from "../constants/theme";
 import SectionCard from "../components/product/SectionCard";
 import FormInput from "../components/ui/FormInput";
 import ButtonPrimary from "../components/ui/ButtonPrimary";
+import { api } from "../services/api";
 
 export default function LoginPage({ navigate, onLogin }) {
-  const [email, setEmail] = useState("priya@example.com");
+  const [email, setEmail] = useState("");
   const [pass, setPass] = useState("");
   const [show, setShow] = useState(false);
   const [err, setErr] = useState("");
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
+    setErr("");
+
     if (!email || !pass) {
       setErr("Please fill in all fields.");
       return;
     }
-    onLogin({ name: "Priya Sharma", email });
-    navigate("dashboard");
+
+    try {
+      const response = await api.login({ email, password: pass });
+      const data = await response.json();
+
+      if (!response.ok) {
+        setErr(data.message || "Login failed.");
+        return;
+      }
+
+      const userData = data.user || { email };
+      const normalizedUser = {
+        ...userData,
+        name: userData.name || userData.firstName || userData.first_name || userData.email?.split("@")[0] || "User"
+      };
+
+      onLogin(normalizedUser);
+      navigate("dashboard");
+    } catch (error) {
+      console.error("Login error:", error);
+      setErr("Unable to connect to the server. Please try again.");
+    }
   };
 
   return (
