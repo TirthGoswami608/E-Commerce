@@ -3,6 +3,7 @@ import { COLORS as T } from "../../constants/theme";
 export default function AdminSidebar({ activeTab, setActiveTab, navigate }) {
   const menuItems = [
     { id: "dashboard", label: "Dashboard", icon: "📊" },
+    { id: "categories", label: "Categories", icon: "🗂️" },
     { id: "products", label: "Products", icon: "🛍️" },
     { id: "orders", label: "Orders", icon: "📦" },
     { id: "customers", label: "Customers", icon: "👥" },

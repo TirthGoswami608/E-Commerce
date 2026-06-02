@@ -16,6 +16,12 @@ export const api = {
     return response.json();
   },
 
+  getCategories: async () => {
+    const response = await fetch(`${API_BASE_URL}/categories`);
+    const data = await response.json();
+    return data?.data || [];
+  },
+
   // Orders
   getOrders: async () => {
     const response = await fetch(`${API_BASE_URL}/orders`);

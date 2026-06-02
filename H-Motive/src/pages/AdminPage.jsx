@@ -2,6 +2,8 @@ import { useState } from "react";
 import AdminHeader from "../components/admin/AdminHeader";
 import AdminSidebar from "../components/admin/AdminSidebar";
 import AdminStatCard from "../components/admin/AdminStatCard";
+import CategoryForm from "../components/admin/CategoryForm";
+import ProductForm from "../components/admin/ProductForm";
 import { COLORS as T } from "../constants/theme";
 
 export default function AdminPage({ navigate }) {
@@ -14,7 +16,7 @@ export default function AdminPage({ navigate }) {
     { label: "Avg. Order Value", value: "₹3,420", icon: "💎", change: 5.4, isPositive: true },
   ];
 
-  const products = [
+  const initialProducts = [
     { id: 1, name: "Wild Forest Honey", stock: 42, price: "₹850", category: "Honey" },
     { id: 2, name: "Herbal Glow Kit", stock: 15, price: "₹1,200", category: "Wellness" },
     { id: 3, name: "Organic Neem Oil", stock: 0, price: "₹450", category: "Personal Care" },
@@ -70,6 +72,20 @@ export default function AdminPage({ navigate }) {
   const [showRefundForm, setShowRefundForm] = useState(false);
   const [refundAmount, setRefundAmount] = useState("0");
   const [refundReason, setRefundReason] = useState("Customer Request");
+  
+  // Categories & Products state + modals
+  const [categories, setCategories] = useState([
+    { id: 1, name: "Honey", description: "Pure honey products" },
+    { id: 2, name: "Wellness", description: "Wellness kits and supplements" },
+    { id: 3, name: "Personal Care", description: "Skincare and oils" },
+  ]);
+  const [products, setProducts] = useState(initialProducts);
+
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [editingCategory, setEditingCategory] = useState(null);
+
+  const [showProductModal, setShowProductModal] = useState(false);
+  const [editingProduct, setEditingProduct] = useState(null);
 
   const filteredOrders = orders.filter(o => {
     const matchFilter = orderFilter === "All" || o.status === orderFilter;
@@ -147,6 +163,33 @@ export default function AdminPage({ navigate }) {
     printWindow.print();
   };
 
+  // Category/Product save handlers
+  const handleSaveCategory = (cat) => {
+    if (cat.id) {
+      setCategories(prev => prev.map(c => c.id === cat.id ? { ...c, ...cat } : c));
+      alert("Category updated");
+    } else {
+      const newCat = { ...cat, id: Date.now() };
+      setCategories(prev => [...prev, newCat]);
+      alert("Category added");
+    }
+    setShowCategoryModal(false);
+    setEditingCategory(null);
+  };
+
+  const handleSaveProduct = (prod) => {
+    if (prod.id) {
+      setProducts(prev => prev.map(p => p.id === prod.id ? { ...p, ...prod } : p));
+      alert("Product updated");
+    } else {
+      const newProd = { ...prod, id: Date.now() };
+      setProducts(prev => [...prev, newProd]);
+      alert("Product added");
+    }
+    setShowProductModal(false);
+    setEditingProduct(null);
+  };
+
   const exportToCSV = () => {
     const headers = ["Order ID", "Customer", "Email", "Amount", "Items", "Status", "Date"];
     const rows = orders.map(o => [o.id, o.customer, o.email, o.amount, o.items, o.status, o.date]);
@@ -175,12 +218,15 @@ export default function AdminPage({ navigate }) {
               <button style={{ 
                 background: T.brown, color: "#fff", border: "none", borderRadius: "100px", 
                 padding: "12px 24px", fontWeight: 700, cursor: "pointer" 
-              }}>+ Add New Product</button>
+              }} onClick={() => { setEditingProduct(null); setShowProductModal(true); }}>
+                + Add New Product
+              </button>
+               
             </div>
-            <div style={{ background: "#fff", borderRadius: "24px", border: `1px solid ${T.border}`, overflow: "hidden" }}>
+            <div style={{ background: "#fff", borderRadius: "24px", border: "1px solid " + T.border, overflow: "hidden" }}>
               <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
                 <thead>
-                  <tr style={{ background: "#F9F6F2", borderBottom: `1px solid ${T.border}` }}>
+                  <tr style={{ background: "#F9F6F2", borderBottom: "1px solid " + T.border }}>
                     <th style={{ padding: "20px 24px", fontSize: 13, fontWeight: 700, color: T.textLight, textTransform: "uppercase" }}>Product Name</th>
                     <th style={{ padding: "20px 24px", fontSize: 13, fontWeight: 700, color: T.textLight, textTransform: "uppercase" }}>Category</th>
                     <th style={{ padding: "20px 24px", fontSize: 13, fontWeight: 700, color: T.textLight, textTransform: "uppercase" }}>Price</th>
@@ -190,14 +236,14 @@ export default function AdminPage({ navigate }) {
                 </thead>
                 <tbody>
                   {products.map(p => (
-                    <tr key={p.id} style={{ borderBottom: `1px solid ${T.border}`, transition: "all 0.2s" }} onMouseEnter={e => e.currentTarget.style.background = "#FEFAF3"} onMouseLeave={e => e.currentTarget.style.background = "none"}>
+                    <tr key={p.id} style={{ borderBottom: "1px solid " + T.border, transition: "all 0.2s" }} onMouseEnter={e => e.currentTarget.style.background = "#FEFAF3"} onMouseLeave={e => e.currentTarget.style.background = "none"}>
                       <td style={{ padding: "20px 24px", fontWeight: 700, color: T.brown }}>{p.name}</td>
                       <td style={{ padding: "20px 24px", color: T.textMid }}>{p.category}</td>
                       <td style={{ padding: "20px 24px", fontWeight: 800 }}>{p.price}</td>
                       <td style={{ padding: "20px 24px" }}>
                         <span style={{ 
                           padding: "6px 12px", borderRadius: "100px", fontSize: 12, fontWeight: 700,
-                          background: p.stock > 10 ? `${T.green}15` : p.stock > 0 ? `${T.gold}15` : "#E74C3C15",
+                          background: p.stock > 10 ? (T.green + '15') : p.stock > 0 ? (T.gold + '15') : "#E74C3C15",
                           color: p.stock > 10 ? T.green : p.stock > 0 ? T.gold : "#E74C3C"
                         }}>
                           {p.stock > 10 ? `In Stock (${p.stock})` : p.stock > 0 ? `Low Stock (${p.stock})` : "Out of Stock"}
@@ -205,12 +251,53 @@ export default function AdminPage({ navigate }) {
                       </td>
                       <td style={{ padding: "20px 24px" }}>
                         <div style={{ display: "flex", gap: 12 }}>
-                          <button style={{ border: "none", background: "none", cursor: "pointer", fontSize: 18 }}>✏️</button>
-                          <button style={{ border: "none", background: "none", cursor: "pointer", fontSize: 18 }}>🗑️</button>
+                          <button onClick={(e) => { e.stopPropagation(); setEditingProduct(p); setShowProductModal(true); }} style={{ border: "none", background: "none", cursor: "pointer", fontSize: 18 }} title="Edit">✏️</button>
+                          <button onClick={(e) => { e.stopPropagation(); if (confirm('Delete product "' + p.name + '"?')) setProducts(prev => prev.filter(x => x.id !== p.id)); }} style={{ border: "none", background: "none", cursor: "pointer", fontSize: 18 }} title="Delete">🗑️</button>
                         </div>
                       </td>
                     </tr>
                   ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        );
+      case "categories":
+        return (
+          <div className="fade-in">
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 32 }}>
+              <h3 style={{ fontSize: 20, color: T.brown, fontWeight: 700 }}>Categories</h3>
+              <button onClick={() => { setEditingCategory(null); setShowCategoryModal(true); }} style={{ background: T.brown, color: "#fff", border: "none", borderRadius: "100px", padding: "12px 24px", fontWeight: 700, cursor: "pointer" }}>+ Add New Category</button>
+            </div>
+
+            <div style={{ background: "#fff", borderRadius: "24px", border: "1px solid " + T.border, overflow: "hidden" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
+                <thead>
+                  <tr style={{ background: "#F9F6F2", borderBottom: "1px solid " + T.border }}>
+                    <th style={{ padding: "20px 24px", fontSize: 13, fontWeight: 700, color: T.textLight, textTransform: "uppercase" }}>Name</th>
+                    <th style={{ padding: "20px 24px", fontSize: 13, fontWeight: 700, color: T.textLight, textTransform: "uppercase" }}>Description</th>
+                    <th style={{ padding: "20px 24px", fontSize: 13, fontWeight: 700, color: T.textLight, textTransform: "uppercase" }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {categories.length === 0 ? (
+                    <tr>
+                      <td colSpan="3" style={{ padding: "40px", textAlign: "center", color: T.textLight }}>No categories found. Click "Add New Category" to create one.</td>
+                    </tr>
+                  ) : (
+                    categories.map(c => (
+                      <tr key={c.id} style={{ borderBottom: "1px solid " + T.border }} onMouseEnter={e => e.currentTarget.style.background = "#FEFAF3"} onMouseLeave={e => e.currentTarget.style.background = "none"}>
+                        <td style={{ padding: "20px 24px", fontWeight: 700, color: T.brown }}>{c.name}</td>
+                        <td style={{ padding: "20px 24px", color: T.textMid }}>{c.description}</td>
+                        <td style={{ padding: "20px 24px" }}>
+                          <div style={{ display: "flex", gap: 12 }}>
+                            <button onClick={() => { setEditingCategory(c); setShowCategoryModal(true); }} style={{ border: "none", background: "none", cursor: "pointer", fontSize: 18 }} title="Edit">✏️</button>
+                            <button onClick={() => { if (confirm('Delete category "' + c.name + '"?')) setCategories(prev => prev.filter(x => x.id !== c.id)); }} style={{ border: "none", background: "none", cursor: "pointer", fontSize: 18 }} title="Delete">🗑️</button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
@@ -227,12 +314,12 @@ export default function AdminPage({ navigate }) {
                   placeholder="Search Order ID or Customer..." 
                   value={searchOrder}
                   onChange={(e) => setSearchOrder(e.target.value)}
-                  style={{ padding: "12px 16px", borderRadius: "12px", border: `1px solid ${T.border}`, background: "#F9F6F2", width: 280 }} 
+                  style={{ padding: "12px 16px", borderRadius: "12px", border: "1px solid " + T.border, background: "#F9F6F2", width: 280 }} 
                 />
                 <select 
                   value={orderFilter}
                   onChange={(e) => setOrderFilter(e.target.value)}
-                  style={{ padding: "12px 16px", borderRadius: "12px", border: `1px solid ${T.border}`, background: "#F9F6F2" }}>
+                  style={{ padding: "12px 16px", borderRadius: "12px", border: "1px solid " + T.border, background: "#F9F6F2" }}>
                   <option>All</option>
                   <option>Pending Payment</option>
                   <option>Processing</option>
@@ -242,10 +329,10 @@ export default function AdminPage({ navigate }) {
               </div>
             </div>
 
-            <div style={{ background: "#fff", borderRadius: "24px", border: `1px solid ${T.border}`, overflow: "hidden" }}>
+            <div style={{ background: "#fff", borderRadius: "24px", border: "1px solid " + T.border, overflow: "hidden" }}>
               <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
                 <thead>
-                  <tr style={{ background: "#F9F6F2", borderBottom: `1px solid ${T.border}` }}>
+                  <tr style={{ background: "#F9F6F2", borderBottom: "1px solid " + T.border }}>
                     <th style={{ padding: "20px 24px", fontSize: 13, fontWeight: 700, color: T.textLight, textTransform: "uppercase" }}>Order ID</th>
                     <th style={{ padding: "20px 24px", fontSize: 13, fontWeight: 700, color: T.textLight, textTransform: "uppercase" }}>Customer</th>
                     <th style={{ padding: "20px 24px", fontSize: 13, fontWeight: 700, color: T.textLight, textTransform: "uppercase" }}>Amount</th>
@@ -258,7 +345,7 @@ export default function AdminPage({ navigate }) {
                 <tbody>
                   {filteredOrders.length > 0 ? (
                     filteredOrders.map(ord => (
-                      <tr key={ord.id} onClick={() => openOrderModal(ord)} style={{ borderBottom: `1px solid ${T.border}`, transition: "all 0.2s", cursor: "pointer" }} onMouseEnter={e => e.currentTarget.style.background = "#FEFAF3"} onMouseLeave={e => e.currentTarget.style.background = "none"}>
+                      <tr key={ord.id} onClick={() => openOrderModal(ord)} style={{ borderBottom: "1px solid " + T.border, transition: "all 0.2s", cursor: "pointer" }} onMouseEnter={e => e.currentTarget.style.background = "#FEFAF3"} onMouseLeave={e => e.currentTarget.style.background = "none"}>
                         <td style={{ padding: "20px 24px", fontWeight: 700, color: T.brown }}>{ord.id}</td>
                         <td style={{ padding: "20px 24px", color: T.textMid }}>{ord.customer}</td>
                         <td style={{ padding: "20px 24px", fontWeight: 800 }}>{ord.amount}</td>
@@ -266,7 +353,7 @@ export default function AdminPage({ navigate }) {
                         <td style={{ padding: "20px 24px" }}>
                           <span style={{ 
                             padding: "6px 12px", borderRadius: "100px", fontSize: 12, fontWeight: 700,
-                            background: ord.status === "Delivered" ? `${T.green}15` : ord.status === "Shipped" ? `${T.gold}15` : ord.status === "Processing" ? "#e3f2fd15" : ord.status === "Pending Payment" ? "#FF980015" : "#E74C3C15",
+                            background: ord.status === "Delivered" ? (T.green + '15') : ord.status === "Shipped" ? (T.gold + '15') : ord.status === "Processing" ? "#e3f2fd15" : ord.status === "Pending Payment" ? "#FF980015" : "#E74C3C15",
                             color: ord.status === "Delivered" ? T.green : ord.status === "Shipped" ? T.gold : ord.status === "Processing" ? "#1976d2" : ord.status === "Pending Payment" ? "#ff6f00" : "#E74C3C"
                           }}>
                             {ord.status}
@@ -297,15 +384,15 @@ export default function AdminPage({ navigate }) {
             <div style={{ display: "flex", gap: 12, marginTop: 32, marginBottom: 32 }}>
               <button 
                 onClick={exportToCSV}
-                style={{ padding: "12px 20px", borderRadius: "12px", border: `1px solid ${T.border}`, background: "#fff", color: T.brown, fontWeight: 700, cursor: "pointer", fontSize: 14 }}>
+                style={{ padding: "12px 20px", borderRadius: "12px", border: "1px solid " + T.border, background: "#fff", color: T.brown, fontWeight: 700, cursor: "pointer", fontSize: 14 }}>
                 📥 Export to CSV
               </button>
               <button 
-                style={{ padding: "12px 20px", borderRadius: "12px", border: `1px solid ${T.border}`, background: "#fff", color: T.brown, fontWeight: 700, cursor: "pointer", fontSize: 14 }}>
+                style={{ padding: "12px 20px", borderRadius: "12px", border: "1px solid " + T.border, background: "#fff", color: T.brown, fontWeight: 700, cursor: "pointer", fontSize: 14 }}>
                 🔔 Email Notifications
               </button>
               <button 
-                style={{ padding: "12px 20px", borderRadius: "12px", border: `1px solid ${T.border}`, background: "#fff", color: T.brown, fontWeight: 700, cursor: "pointer", fontSize: 14 }}>
+                style={{ padding: "12px 20px", borderRadius: "12px", border: "1px solid " + T.border, background: "#fff", color: T.brown, fontWeight: 700, cursor: "pointer", fontSize: 14 }}>
                 📊 Generate Report
               </button>
             </div>
@@ -318,7 +405,7 @@ export default function AdminPage({ navigate }) {
                 { label: "In Transit", value: "98", icon: "🚚", color: "#FF9800" },
                 { label: "Pending", value: "60", icon: "⏳", color: "#1976D2" },
               ].map((stat, i) => (
-                <div key={i} style={{ background: "#fff", borderRadius: "20px", padding: "24px", border: `1px solid ${T.border}`, textAlign: "center" }}>
+                <div key={i} style={{ background: "#fff", borderRadius: "20px", padding: "24px", border: "1px solid " + T.border, textAlign: "center" }}>
                   <div style={{ fontSize: 32, marginBottom: 12 }}>{stat.icon}</div>
                   <div style={{ fontSize: 13, color: T.textLight, fontWeight: 600, marginBottom: 8 }}>{stat.label}</div>
                   <div style={{ fontSize: 24, fontWeight: 800, color: stat.color }}>{stat.value}</div>
@@ -330,7 +417,7 @@ export default function AdminPage({ navigate }) {
             {showModal && selectedOrder && (
               <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>
                 <div style={{ background: "#fff", borderRadius: "24px", padding: "40px", maxWidth: 800, maxHeight: "90vh", overflowY: "auto", boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 32, borderBottom: `1px solid ${T.border}`, paddingBottom: 20 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 32, borderBottom: "1px solid " + T.border, paddingBottom: 20 }}>
                     <h2 style={{ fontSize: 24, color: T.brown, fontWeight: 700 }}>Order Details</h2>
                     <button onClick={closeOrderModal} style={{ background: "none", border: "none", fontSize: 28, cursor: "pointer" }}>✕</button>
                   </div>
@@ -365,8 +452,8 @@ export default function AdminPage({ navigate }) {
                           key={status}
                           onClick={() => updateOrderStatus(selectedOrder.id, status)}
                           style={{
-                            padding: "8px 16px", borderRadius: "8px", border: selectedOrder.status === status ? `2px solid ${T.gold}` : `1px solid ${T.border}`,
-                            background: selectedOrder.status === status ? `${T.gold}15` : "#fff",
+                            padding: "8px 16px", borderRadius: "8px", border: selectedOrder.status === status ? "2px solid " + T.gold : "1px solid " + T.border,
+                            background: selectedOrder.status === status ? (T.gold + '15') : "#fff",
                             color: T.brown, fontWeight: 600, cursor: "pointer", fontSize: 12
                           }}>
                           {status === "Pending Payment" ? "⏳ Pending" : status === "Processing" ? "⚙️ Processing" : status === "Shipped" ? "🚚 Shipped" : "✅ Delivered"}
@@ -380,7 +467,7 @@ export default function AdminPage({ navigate }) {
                     <div style={{ fontSize: 16, color: T.brown, fontWeight: 700, marginBottom: 16 }}>📦 Order Items</div>
                     <div style={{ background: T.ivory, borderRadius: "16px", overflow: "hidden" }}>
                       {selectedOrder.orderItems.map((item, i) => (
-                        <div key={i} style={{ padding: "16px", borderBottom: i < selectedOrder.orderItems.length - 1 ? `1px solid ${T.border}` : "none", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <div key={i} style={{ padding: "16px", borderBottom: i < selectedOrder.orderItems.length - 1 ? "1px solid " + T.border : "none", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                           <div>
                             <div style={{ fontSize: 14, fontWeight: 700, color: T.brown }}>{item.name}</div>
                             <div style={{ fontSize: 12, color: T.textLight }}>Qty: {item.qty}</div>
@@ -418,7 +505,7 @@ export default function AdminPage({ navigate }) {
                       value={orderNotes}
                       onChange={(e) => setOrderNotes(e.target.value)}
                       placeholder="Add order notes here..."
-                      style={{ width: "100%", padding: "12px", borderRadius: "8px", border: `1px solid ${T.border}`, fontSize: 14, fontFamily: "inherit", height: 80, resize: "vertical" }}
+                      style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid " + T.border, fontSize: 14, fontFamily: "inherit", height: 80, resize: "vertical" }}
                     />
                     <button 
                       onClick={() => saveOrderNotes(selectedOrder.id)}
@@ -450,7 +537,7 @@ export default function AdminPage({ navigate }) {
                   </div>
 
                   {/* Action Buttons */}
-                  <div style={{ display: "flex", gap: 12, justifyContent: "space-between", borderTop: `1px solid ${T.border}`, paddingTop: 20 }}>
+                  <div style={{ display: "flex", gap: 12, justifyContent: "space-between", borderTop: "1px solid " + T.border, paddingTop: 20 }}>
                     <div style={{ display: "flex", gap: 10 }}>
                       <button 
                         onClick={() => printInvoice(selectedOrder)}
@@ -465,7 +552,7 @@ export default function AdminPage({ navigate }) {
                     </div>
                     <button 
                       onClick={closeOrderModal}
-                      style={{ padding: "12px 20px", borderRadius: "8px", border: `1px solid ${T.border}`, background: "#fff", color: T.brown, fontWeight: 700, cursor: "pointer" }}>
+                      style={{ padding: "12px 20px", borderRadius: "8px", border: "1px solid " + T.border, background: "#fff", color: T.brown, fontWeight: 700, cursor: "pointer" }}>
                       Close
                     </button>
                   </div>
@@ -478,17 +565,17 @@ export default function AdminPage({ navigate }) {
         return (
           <div className="fade-in" style={{ display: "grid", gridTemplateColumns: "1fr 1.4fr", gap: 32 }}>
             {/* Create Event Form */}
-            <div style={{ background: "#fff", borderRadius: "32px", padding: "32px", border: `1px solid ${T.border}`, height: "fit-content" }}>
+            <div style={{ background: "#fff", borderRadius: "32px", padding: "32px", border: "1px solid " + T.border, height: "fit-content" }}>
               <h3 style={{ fontSize: 18, color: T.brown, fontWeight: 700, marginBottom: 24 }}>Schedule New Event</h3>
               <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
                 <div>
                   <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: T.textLight, marginBottom: 8 }}>Event Title</label>
-                  <input type="text" placeholder="e.g. Summer Honey Fest" style={{ width: "100%", padding: "12px 16px", borderRadius: "12px", border: `1px solid ${T.border}`, background: "#F9F6F2" }} />
+                  <input type="text" placeholder="e.g. Summer Honey Fest" style={{ width: "100%", padding: "12px 16px", borderRadius: "12px", border: "1px solid " + T.border, background: "#F9F6F2" }} />
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
                   <div>
                     <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: T.textLight, marginBottom: 8 }}>Target Category</label>
-                    <select style={{ width: "100%", padding: "12px 16px", borderRadius: "12px", border: `1px solid ${T.border}`, background: "#F9F6F2" }}>
+                    <select style={{ width: "100%", padding: "12px 16px", borderRadius: "12px", border: "1px solid " + T.border, background: "#F9F6F2" }}>
                       <option>All Categories</option>
                       <option>Honey</option>
                       <option>Wellness</option>
@@ -497,24 +584,24 @@ export default function AdminPage({ navigate }) {
                   </div>
                   <div>
                     <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: T.textLight, marginBottom: 8 }}>Discount %</label>
-                    <input type="number" placeholder="10" style={{ width: "100%", padding: "12px 16px", borderRadius: "12px", border: `1px solid ${T.border}`, background: "#F9F6F2" }} />
+                    <input type="number" placeholder="10" style={{ width: "100%", padding: "12px 16px", borderRadius: "12px", border: "1px solid " + T.border, background: "#F9F6F2" }} />
                   </div>
                 </div>
                 <div>
                   <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: T.textLight, marginBottom: 8 }}>End Date</label>
-                  <input type="date" style={{ width: "100%", padding: "12px 16px", borderRadius: "12px", border: `1px solid ${T.border}`, background: "#F9F6F2" }} />
+                  <input type="date" style={{ width: "100%", padding: "12px 16px", borderRadius: "12px", border: "1px solid " + T.border, background: "#F9F6F2" }} />
                 </div>
                 <button style={{ background: T.gold, color: "#fff", border: "none", borderRadius: "100px", padding: "14px", fontWeight: 700, marginTop: 10 }}>Launch Event</button>
               </div>
             </div>
 
             {/* Existing Events List */}
-            <div style={{ background: "#fff", borderRadius: "32px", padding: "32px", border: `1px solid ${T.border}` }}>
+            <div style={{ background: "#fff", borderRadius: "32px", padding: "32px", border: "1px solid " + T.border }}>
               <h3 style={{ fontSize: 18, color: T.brown, fontWeight: 700, marginBottom: 24 }}>Active & Upcoming</h3>
               <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
                 {events.map(e => (
-                  <div key={e.id} style={{ padding: "24px", borderRadius: "24px", background: "#FDFCFB", border: `1px solid ${T.border}`, position: "relative" }}>
-                    <div style={{ position: "absolute", top: 20, right: 24, fontSize: 11, fontWeight: 800, textTransform: "uppercase", padding: "4px 10px", borderRadius: "100px", background: e.status === "Active" ? `${T.green}15` : "#eee", color: e.status === "Active" ? T.green : "#888" }}>
+                  <div key={e.id} style={{ padding: "24px", borderRadius: "24px", background: "#FDFCFB", border: "1px solid " + T.border, position: "relative" }}>
+                    <div style={{ position: "absolute", top: 20, right: 24, fontSize: 11, fontWeight: 800, textTransform: "uppercase", padding: "4px 10px", borderRadius: "100px", background: e.status === "Active" ? (T.green + '15') : "#eee", color: e.status === "Active" ? T.green : "#888" }}>
                       {e.status}
                     </div>
                     <div style={{ display: "flex", gap: 20, alignItems: "center" }}>
@@ -527,7 +614,7 @@ export default function AdminPage({ navigate }) {
                       </div>
                     </div>
                     <div style={{ marginTop: 20, display: "flex", gap: 12 }}>
-                      <button style={{ padding: "8px 16px", borderRadius: "100px", border: `1px solid ${T.border}`, background: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>Edit Details</button>
+                      <button style={{ padding: "8px 16px", borderRadius: "100px", border: "1px solid " + T.border, background: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>Edit Details</button>
                       <button style={{ padding: "8px 16px", borderRadius: "100px", border: "none", background: "#E74C3C15", color: "#E74C3C", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>Stop Event</button>
                     </div>
                   </div>
@@ -541,10 +628,10 @@ export default function AdminPage({ navigate }) {
         return (
           <div className="fade-in">
             <h3 style={{ fontSize: 20, color: T.brown, fontWeight: 700, marginBottom: 32 }}>Customer Directory</h3>
-            <div style={{ background: "#fff", borderRadius: "24px", border: `1px solid ${T.border}`, overflow: "hidden" }}>
+            <div style={{ background: "#fff", borderRadius: "24px", border: "1px solid " + T.border, overflow: "hidden" }}>
               <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
                 <thead>
-                  <tr style={{ background: "#F9F6F2", borderBottom: `1px solid ${T.border}` }}>
+                  <tr style={{ background: "#F9F6F2", borderBottom: "1px solid " + T.border }}>
                     <th style={{ padding: "20px 24px", fontSize: 13, fontWeight: 700, color: T.textLight, textTransform: "uppercase" }}>Customer</th>
                     <th style={{ padding: "20px 24px", fontSize: 13, fontWeight: 700, color: T.textLight, textTransform: "uppercase" }}>Points</th>
                     <th style={{ padding: "20px 24px", fontSize: 13, fontWeight: 700, color: T.textLight, textTransform: "uppercase" }}>Orders</th>
@@ -554,7 +641,7 @@ export default function AdminPage({ navigate }) {
                 </thead>
                 <tbody>
                   {customers.map(c => (
-                    <tr key={c.id} style={{ borderBottom: `1px solid ${T.border}` }}>
+                    <tr key={c.id} style={{ borderBottom: "1px solid " + T.border }}>
                       <td style={{ padding: "20px 24px" }}>
                         <div style={{ fontWeight: 700, color: T.brown }}>{c.name}</div>
                         <div style={{ fontSize: 13, color: T.textLight }}>{c.email}</div>
@@ -564,7 +651,7 @@ export default function AdminPage({ navigate }) {
                       <td style={{ padding: "20px 24px" }}>
                         <span style={{ 
                           padding: "6px 12px", borderRadius: "100px", fontSize: 11, fontWeight: 800, textTransform: "uppercase",
-                          background: c.status === "VIP" ? `${T.gold}15` : c.status === "Active" ? `${T.green}15` : "#eee",
+                          background: c.status === "VIP" ? (T.gold + '15') : c.status === "Active" ? (T.green + '15') : "#eee",
                           color: c.status === "VIP" ? T.gold : c.status === "Active" ? T.green : "#888"
                         }}>
                           {c.status}
@@ -581,7 +668,7 @@ export default function AdminPage({ navigate }) {
       case "rewards":
         return (
           <div className="fade-in" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 32 }}>
-            <div style={{ background: "#fff", borderRadius: "32px", padding: "32px", border: `1px solid ${T.border}` }}>
+            <div style={{ background: "#fff", borderRadius: "32px", padding: "32px", border: "1px solid " + T.border }}>
               <h3 style={{ fontSize: 18, color: T.brown, fontWeight: 700, marginBottom: 24 }}>Point Configuration</h3>
               <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
                 {[
@@ -592,41 +679,41 @@ export default function AdminPage({ navigate }) {
                 ].map((s, i) => (
                   <div key={i}>
                     <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: T.textLight, marginBottom: 8 }}>{s.label}</label>
-                    <input type="text" defaultValue={s.value} style={{ width: "100%", padding: "12px 16px", borderRadius: "12px", border: `1px solid ${T.border}`, background: "#F9F6F2" }} />
+                    <input type="text" defaultValue={s.value} style={{ width: "100%", padding: "12px 16px", borderRadius: "12px", border: "1px solid " + T.border, background: "#F9F6F2" }} />
                   </div>
                 ))}
                 <button style={{ background: T.brown, color: "#fff", border: "none", borderRadius: "100px", padding: "14px", fontWeight: 700, marginTop: 10 }}>Save Changes</button>
               </div>
             </div>
-            <div style={{ background: "#fff", borderRadius: "32px", padding: "32px", border: `2px dashed ${T.border}`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center" }}>
+            <div style={{ background: "#fff", borderRadius: "32px", padding: "32px", border: "2px dashed " + T.border, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center" }}>
               <div style={{ fontSize: 48, marginBottom: 16 }}>🎁</div>
               <h4 style={{ fontSize: 18, color: T.brown, fontWeight: 700, marginBottom: 12 }}>New Reward Scheme</h4>
               <p style={{ fontSize: 14, color: T.textMid, marginBottom: 24 }}>Create seasonal reward campaigns to boost sales.</p>
-              <button style={{ border: `2px solid ${T.brown}`, background: "none", color: T.brown, fontWeight: 700, padding: "12px 24px", borderRadius: "100px" }}>+ Create Campaign</button>
+              <button style={{ border: "2px solid " + T.brown, background: "none", color: T.brown, fontWeight: 700, padding: "12px 24px", borderRadius: "100px" }}>+ Create Campaign</button>
             </div>
           </div>
         );
       case "settings":
         return (
           <div className="fade-in" style={{ maxWidth: 800 }}>
-            <div style={{ background: "#fff", borderRadius: "32px", padding: "40px", border: `1px solid ${T.border}` }}>
+            <div style={{ background: "#fff", borderRadius: "32px", padding: "40px", border: "1px solid " + T.border }}>
               <h3 style={{ fontSize: 20, color: T.brown, fontWeight: 700, marginBottom: 32 }}>Store Settings</h3>
               <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
                   <div>
                     <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: T.textLight, marginBottom: 8 }}>Store Name</label>
-                    <input type="text" defaultValue="H-Motive Organic" style={{ width: "100%", padding: "12px 16px", borderRadius: "12px", border: `1px solid ${T.border}` }} />
+                    <input type="text" defaultValue="H-Motive Organic" style={{ width: "100%", padding: "12px 16px", borderRadius: "12px", border: "1px solid " + T.border }} />
                   </div>
                   <div>
                     <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: T.textLight, marginBottom: 8 }}>Support Email</label>
-                    <input type="text" defaultValue="hello@hmotive.org" style={{ width: "100%", padding: "12px 16px", borderRadius: "12px", border: `1px solid ${T.border}` }} />
+                    <input type="text" defaultValue="hello@hmotive.org" style={{ width: "100%", padding: "12px 16px", borderRadius: "12px", border: "1px solid " + T.border }} />
                   </div>
                 </div>
                 <div>
                   <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: T.textLight, marginBottom: 8 }}>Store Address</label>
-                  <textarea defaultValue="📍 Ahmedabad, India" style={{ width: "100%", padding: "12px 16px", borderRadius: "12px", border: `1px solid ${T.border}`, height: 80 }} />
+                  <textarea defaultValue="📍 Ahmedabad, India" style={{ width: "100%", padding: "12px 16px", borderRadius: "12px", border: "1px solid " + T.border, height: 80 }} />
                 </div>
-                <div style={{ borderTop: `1px solid ${T.border}`, paddingTop: 24, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div style={{ borderTop: "1px solid " + T.border, paddingTop: 24, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div>
                     <div style={{ fontWeight: 700, color: T.brown }}>Maintenance Mode</div>
                     <div style={{ fontSize: 13, color: T.textLight }}>Hide storefront from customers</div>
@@ -650,10 +737,10 @@ export default function AdminPage({ navigate }) {
             </div>
             
             <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: 32 }}>
-              <div style={{ background: "#fff", borderRadius: "32px", padding: "32px", border: `1px solid ${T.border}` }}>
+              <div style={{ background: "#fff", borderRadius: "32px", padding: "32px", border: "1px solid " + T.border }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 32 }}>
                   <h3 style={{ fontSize: 18, color: T.brown, fontWeight: 700 }}>Sales Analytics</h3>
-                  <select style={{ padding: "8px 16px", borderRadius: "10px", border: `1px solid ${T.border}`, outline: "none" }}>
+                  <select style={{ padding: "8px 16px", borderRadius: "10px", border: "1px solid " + T.border, outline: "none" }}>
                     <option>Last 7 Days</option>
                     <option>Last 30 Days</option>
                   </select>
@@ -669,7 +756,7 @@ export default function AdminPage({ navigate }) {
                 </div>
               </div>
 
-              <div style={{ background: "#fff", borderRadius: "32px", padding: "32px", border: `1px solid ${T.border}` }}>
+              <div style={{ background: "#fff", borderRadius: "32px", padding: "32px", border: "1px solid " + T.border }}>
                 <h3 style={{ fontSize: 18, color: T.brown, fontWeight: 700, marginBottom: 24 }}>Recent Activity</h3>
                 <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
                   {[
@@ -705,6 +792,31 @@ export default function AdminPage({ navigate }) {
         
         <main style={{ padding: "40px", maxWidth: 1400, margin: "0 auto" }}>
           {renderContent()}
+          {/* Category Modal */}
+          {showCategoryModal && (
+            <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2000 }}>
+              <div style={{ background: "#fff", borderRadius: 20, padding: 28, width: "min(90%, 640px)" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                  <h3 style={{ margin: 0, color: T.brown }}>{editingCategory ? "Edit Category" : "Add Category"}</h3>
+                  <button onClick={() => { setShowCategoryModal(false); setEditingCategory(null); }} style={{ background: "none", border: "none", fontSize: 20 }}>✕</button>
+                </div>
+                <CategoryForm initial={editingCategory} onSave={handleSaveCategory} onCancel={() => { setShowCategoryModal(false); setEditingCategory(null); }} />
+              </div>
+            </div>
+          )}
+
+          {/* Product Modal */}
+          {showProductModal && (
+            <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2000 }}>
+              <div style={{ background: "#fff", borderRadius: 20, padding: 28, width: "min(95%, 820px)" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                  <h3 style={{ margin: 0, color: T.brown }}>{editingProduct ? "Edit Product" : "Add Product"}</h3>
+                  <button onClick={() => { setShowProductModal(false); setEditingProduct(null); }} style={{ background: "none", border: "none", fontSize: 20 }}>✕</button>
+                </div>
+                <ProductForm initial={editingProduct} categories={categories} onSave={handleSaveProduct} onCancel={() => { setShowProductModal(false); setEditingProduct(null); }} />
+              </div>
+            </div>
+          )}
         </main>
       </div>
     </div>

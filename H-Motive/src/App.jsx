@@ -19,6 +19,7 @@ import ProductDetailPage from "./pages/ProductDetailPage";
 import RedeemPage from "./pages/RedeemPage";
 import ShopPage from "./pages/ShopPage";
 import SignupPage from "./pages/SignupPage";
+// Notification provider moved to `main.jsx` to avoid wrapping large JSX here
 
 export default function App() {
   const [page, setPage] = useState(() => {
@@ -361,7 +362,6 @@ export default function App() {
 
         <div style={{ maxWidth: 1600, margin: "0 auto" }}>
           <div style={{ display: "grid", gridTemplateColumns: "2.2fr 1fr 1fr 1.2fr", gap: 80, marginBottom: 80 }}>
-            <div>
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
                 <div style={{ width: 44, height: 44, borderRadius: "14px", background: `linear-gradient(135deg, ${COLORS.gold}, ${COLORS.brownLight})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>🍯</div>
                 <span style={{ fontFamily: "'Libre Baskerville', serif", fontSize: 26, fontWeight: 700, letterSpacing: "-0.5px" }}>H-Motive</span>
@@ -371,11 +371,11 @@ export default function App() {
               </p>
               <div style={{ display: "flex", gap: 16 }}>
                 {["📘", "📸", "🐦", "▶️"].map((icon, i) => (
-                  <button key={i} style={{ width: 44, height: 44, borderRadius: "50%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 18, transition: "all 0.3s" }}
-                    onMouseEnter={e => e.currentTarget.style.background = COLORS.gold}
-                    onMouseLeave={e => e.currentTarget.style.background = "rgba(255,255,255,0.06)"}>
-                    {icon}
-                  </button>
+                <button key={i} style={{ width: 44, height: 44, borderRadius: "50%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 18, transition: "all 0.3s" }}
+                  onMouseEnter={e => e.currentTarget.style.background = COLORS.gold}
+                  onMouseLeave={e => e.currentTarget.style.background = "rgba(255,255,255,0.06)"}>
+                  {icon}
+                </button>
                 ))}
               </div>
             </div>
@@ -420,3 +420,202 @@ export default function App() {
 
   );
 }
+  }, [user]);
+
+  useEffect(() => {
+    localStorage.setItem("hm_wishlist", JSON.stringify(wishlist));
+  }, [wishlist]);
+
+  const navigate = (p, id = null) => {
+    setPage(p);
+    if (id) setProductId(id);
+    window.scrollTo(0, 0);
+  };
+
+  const showToast = (msg) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const onAddToCart = (product, qty = 1) => {
+    setCart(prev => {
+      const existing = prev.find(item => item.id === product.id);
+      if (existing) {
+        return prev.map(item => item.id === product.id ? { ...item, qty: item.qty + qty } : item);
+      }
+      return [...prev, { ...product, qty }];
+    });
+    showToast(`${qty} ${product.name}${qty > 1 ? 's' : ''} added to cart!`);
+  };
+
+  const onUpdateQty = (id, delta) => {
+    setCart(prev => prev.map(item => item.id === id ? { ...item, qty: Math.max(1, item.qty + delta) } : item));
+  };
+
+  const onRemoveFromCart = (id) => {
+    setCart(prev => prev.filter(item => item.id !== id));
+  };
+
+  const onClearCart = () => setCart([]);
+
+  const onToggleWishlist = (product) => {
+    setWishlist(prev => {
+      if (prev.find(item => item.id === product.id)) {
+        showToast(`${product.name} removed from wishlist.`);
+        return prev.filter(item => item.id !== product.id);
+      }
+      showToast(`${product.name} added to wishlist!`);
+      return [...prev, product];
+    });
+  };
+
+  const onLogin = (userData) => {
+    setUser(userData);
+    navigate("dashboard");
+  };
+
+  const onLogout = () => {
+    setUser(null);
+    navigate("home");
+  };
+
+  const featured = products.slice(0, 4);
+  const exploreRange = products.slice(4, 8);
+
+  const renderPage = () => {
+    switch (page) {
+      case "login": return <LoginPage navigate={navigate} onLogin={onLogin} />;
+      case "signup": return <SignupPage navigate={navigate} onLogin={onLogin} />;
+      case "cart": return <CartPage navigate={navigate} cart={cart} onUpdateQty={onUpdateQty} onRemove={onRemoveFromCart} />;
+      case "checkout": return <CheckoutPage navigate={navigate} cart={cart} onClearCart={onClearCart} />;
+      case "dashboard": return <DashboardPage navigate={navigate} user={user} onLogout={onLogout} wishlist={wishlist} />;
+      case "orders": return <OrdersPage navigate={navigate} user={user} />;
+      case "about": return <AboutPage navigate={navigate} />;
+      case "contact": return <ContactPage navigate={navigate} />;
+      case "shop": return <ShopPage navigate={navigate} onAdd={onAddToCart} wishlist={wishlist} onToggleWishlist={onToggleWishlist} />;
+      case "detail": return <ProductDetailPage productId={productId} navigate={navigate} onAdd={onAddToCart} wishlist={wishlist} onToggleWishlist={onToggleWishlist} />;
+      case "redeem": return <RedeemPage navigate={navigate} />;
+      case "admin": return <AdminPage navigate={navigate} />;
+
+      case "home":
+      default: return (
+        <>
+          <HeroSlider navigate={navigate} />
+
+          {/* Featured Products */}
+          <section style={{ padding: "100px 3%", background: COLORS.cream }}>
+            <div style={{ maxWidth: 1600, margin: "0 auto" }}>
+              <div style={{ textAlign: "center", marginBottom: 56 }}>
+                <span style={{ display: "inline-block", color: COLORS.green, fontSize: 12, fontWeight: 700, letterSpacing: "2.5px", textTransform: "uppercase", marginBottom: 12 }}>Hand-picked for you</span>
+                <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "clamp(30px, 4vw, 48px)", color: COLORS.textDark, margin: "0 0 16px", fontWeight: 800 }}>Featured Products</h2>
+                <p style={{ color: COLORS.textLight, fontSize: 16, maxWidth: 480, margin: "0 auto" }}>Our most-loved organic products, chosen for exceptional quality and proven results.</p>
+              </div>
+              <div className="products-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 32 }}>
+                {featured.map(p => <ProductCard key={p.id} product={p} onAddToCart={onAddToCart} navigate={navigate} isWishlisted={wishlist.some(w => w.id === p.id)} onToggleWishlist={onToggleWishlist} />)}
+              </div>
+            </div>
+          </section>
+
+          {/* All Products Preview / Explore the Range */}
+          <section style={{ padding: "100px 3%", background: "#fff" }}>
+            <div style={{ maxWidth: 1600, margin: "0 auto" }}>
+              <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 48, flexWrap: "wrap", gap: 24 }}>
+                <div>
+                  <span style={{ display: "inline-block", color: COLORS.green, fontSize: 12, fontWeight: 700, letterSpacing: "2.5px", textTransform: "uppercase", marginBottom: 12 }}>Explore the range</span>
+                  <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "clamp(28px, 4vw, 44px)", color: COLORS.textDark, margin: 0, fontWeight: 800 }}>Our Products</h2>
+                </div>
+                <button onClick={() => navigate("shop")} style={{ background: "transparent", border: `2px solid ${COLORS.gold}`, color: COLORS.brown, borderRadius: 30, padding: "12px 28px", fontSize: 14, fontWeight: 700, cursor: "pointer", transition: "all 0.25s" }}>
+                  View All Products →
+                </button>
+              </div>
+
+              <div className="products-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 32, marginBottom: 48 }}>
+                {exploreRange.map(p => <ProductCard key={p.id} product={p} onAddToCart={onAddToCart} navigate={navigate} isWishlisted={wishlist.some(w => w.id === p.id)} onToggleWishlist={onToggleWishlist} />)}
+              </div>
+
+              <div style={{ textAlign: "center" }}>
+                <button onClick={() => navigate("shop")} style={{ background: `linear-gradient(135deg, ${COLORS.gold}, ${COLORS.brownLight})`, border: "none", color: "#fff", borderRadius: 30, padding: "16px 40px", fontSize: 15, fontWeight: 700, cursor: "pointer", boxShadow: `0 4px 15px ${COLORS.gold}40`, transition: "all 0.25s" }}>
+                  Browse Full Shop →
+                </button>
+              </div>
+            </div>
+          </section>
+
+          {/* Benefits */}
+          <section style={{ padding: "100px 3%", background: `linear-gradient(135deg, ${COLORS.brown} 0%, #3A2211 100%)`, position: "relative", overflow: "hidden" }}>
+            <div style={{ position: "absolute", top: "-20%", right: "-5%", width: 400, height: 400, borderRadius: "50%", background: `${COLORS.gold}10`, pointerEvents: "none" }} />
+            <div style={{ maxWidth: 1600, margin: "0 auto", position: "relative" }}>
+              <div style={{ textAlign: "center", marginBottom: 64 }}>
+                <span style={{ display: "inline-block", color: COLORS.goldLight, fontSize: 12, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 12 }}>Why Choose Us</span>
+                <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "clamp(28px, 4vw, 44px)", color: "#fff", margin: 0, fontWeight: 800 }}>The Organic Promise</h2>
+              </div>
+              <div className="benefits-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 32 }}>
+                {benefits.map((b, i) => (
+                  <div key={i} style={{ background: "rgba(255,255,255,0.06)", borderRadius: 24, padding: "40px 32px", border: `1px solid rgba(255,255,255,0.1)`, backdropFilter: "blur(10px)", transition: "all 0.3s" }}
+                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.1)"; e.currentTarget.style.transform = "translateY(-4px)"; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; e.currentTarget.style.transform = "none"; }}>
+                    <div style={{ fontSize: 42, marginBottom: 20 }}>{b.icon}</div>
+                    <h3 style={{ color: COLORS.goldLight, fontFamily: "'Playfair Display', Georgia, serif", fontSize: 22, margin: "0 0 12px", fontWeight: 700 }}>{b.title}</h3>
+                    <p style={{ color: "rgba(255,255,255,0.65)", fontSize: 15, lineHeight: 1.8, margin: 0 }}>{b.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* Reviews */}
+          <section style={{ padding: "100px 3%", background: COLORS.cream }}>
+            <div style={{ maxWidth: 1600, margin: "0 auto" }}>
+              <div style={{ textAlign: "center", marginBottom: 56 }}>
+                <span style={{ display: "inline-block", color: COLORS.green, fontSize: 12, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 12 }}>Testimonials</span>
+                <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "clamp(28px, 4vw, 44px)", color: COLORS.textDark, margin: "0 0 16px", fontWeight: 800 }}>What Our Customers Say</h2>
+                <div style={{ display: "flex", gap: 4, justifyContent: "center", alignItems: "center" }}>
+                  <span style={{ color: COLORS.gold, fontSize: 18 }}>★★★★★</span>
+                  <span style={{ color: COLORS.textMid, fontSize: 14, fontWeight: 600, marginLeft: 6 }}>4.9 average · 2,400+ verified reviews</span>
+                </div>
+              </div>
+              <div className="reviews-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 32 }}>
+                {reviews.slice(0, 3).map((r, i) => <ReviewCard key={i} review={r} />)}
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 32, marginTop: 32 }}>
+                {reviews.slice(3).map((r, i) => <ReviewCard key={i} review={r} />)}
+              </div>
+            </div>
+          </section>
+
+          {/* Newsletter Section */}
+          <section style={{ padding: "80px 3%", background: "#fff" }}>
+            <div style={{ maxWidth: 1200, margin: "0 auto", background: `linear-gradient(135deg, ${COLORS.ivory} 0%, ${COLORS.goldPale} 100%)`, borderRadius: 40, padding: "60px 40px", textAlign: "center", border: `1px solid ${COLORS.border}`, position: "relative", overflow: "hidden" }}>
+              <div style={{ position: "absolute", top: -50, right: -50, fontSize: 180, opacity: 0.03, transform: "rotate(-15deg)" }}>🌿</div>
+              <div style={{ position: "absolute", bottom: -50, left: -50, fontSize: 180, opacity: 0.03, transform: "rotate(15deg)" }}>🍯</div>
+              
+              <div style={{ position: "relative", zIndex: 1 }}>
+                <span style={{ display: "inline-block", color: COLORS.green, fontSize: 12, fontWeight: 700, letterSpacing: "2.5px", textTransform: "uppercase", marginBottom: 12 }}>Join the Circle</span>
+                <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "clamp(26px, 3.5vw, 42px)", color: COLORS.textDark, margin: "0 0 16px", fontWeight: 800 }}>Subscribe for Wellness Wisdom</h2>
+                <p style={{ color: COLORS.textLight, fontSize: 16, maxWidth: 540, margin: "0 auto 40px", lineHeight: 1.8 }}>Get exclusive access to organic recipes, early product launches, and special member-only discounts delivered to your inbox.</p>
+                
+                <form onSubmit={e => { e.preventDefault(); showToast("Subscribed! Thank you for joining."); e.target.reset(); }} 
+                  style={{ maxWidth: 500, margin: "0 auto", display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
+                  <input type="email" required placeholder="Enter your email address" 
+                    style={{ flex: 1, minWidth: 280, padding: "18px 28px", borderRadius: 30, border: `2px solid ${COLORS.border}`, fontSize: 15, outline: "none", transition: "all 0.3s" }}
+                    onFocus={e => e.target.style.borderColor = COLORS.gold}
+                    onBlur={e => e.target.style.borderColor = COLORS.border}
+                  />
+                  <button type="submit" style={{ background: COLORS.brown, color: "#fff", border: "none", borderRadius: 30, padding: "18px 36px", fontSize: 15, fontWeight: 700, cursor: "pointer", boxShadow: "0 10px 25px rgba(74,44,10,0.15)", transition: "all 0.3s" }}
+                    onMouseEnter={e => { e.target.style.transform = "translateY(-2px)"; e.target.style.boxShadow = "0 15px 30px rgba(74,44,10,0.2)"; }}
+                    onMouseLeave={e => { e.target.style.transform = "none"; e.target.style.boxShadow = "0 10px 25px rgba(74,44,10,0.15)"; }}>
+                    Subscribe Now
+                  </button>
+                </form>
+                <p style={{ fontSize: 12, color: COLORS.textLight, marginTop: 24, opacity: 0.8 }}>We respect your privacy. Unsubscribe at any time.</p>
+              </div>
+            </div>
+          </section>
+        </>
+      );
+    }
+  };
+  const totalCartCount = cart.reduce((acc, item) => acc + item.qty, 0);
+
+  return (
+    <div style={{ fontFamily: "'Nunito', -apple-system, sans-serif", background: COLORS.white, color: COLORS.textDark, overflowX: "hidden" }}>

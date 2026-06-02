@@ -1,16 +1,31 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { COLORS as T } from "../constants/theme";
-import { products, categories } from "../constants/data";
+import { products } from "../constants/data";
+import { api } from "../services/api";
 import ProductCard from "../components/product/ProductCard";
 import SectionCard from "../components/product/SectionCard";
 
 export default function ShopPage({ navigate, onAdd, wishlist, onToggleWishlist }) {
   const [cat, setCat] = useState("All");
+  const [categories, setCategories] = useState(["All"]);
   const [price, setPrice] = useState(5000);
   const [sort, setSort] = useState("default");
   const [visible, setVisible] = useState(9);
   const [search, setSearch] = useState("");
   const [quickViewProduct, setQuickViewProduct] = useState(null);
+  const [categoryError, setCategoryError] = useState(null);
+
+  useEffect(() => {
+    api.getCategories()
+      .then(data => {
+        const names = Array.from(new Set(data.map(category => category.name).filter(Boolean)));
+        setCategories(["All", ...names]);
+      })
+      .catch(error => {
+        console.error("Failed to load categories", error);
+        setCategoryError("Unable to load categories right now.");
+      });
+  }, []);
 
   const filtered = products
     .filter(p => 
@@ -82,6 +97,11 @@ export default function ShopPage({ navigate, onAdd, wishlist, onToggleWishlist }
                   </button>
                 ))}
               </div>
+              {categoryError && (
+                <div style={{ marginTop: 16, padding: 14, background: "#FFF1F0", borderRadius: 14, color: "#C00", fontSize: 13 }}>
+                  {categoryError}
+                </div>
+              )}
             </div>
 
             <div style={{ marginBottom: 40 }}>
